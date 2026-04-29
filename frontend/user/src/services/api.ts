@@ -1,9 +1,10 @@
 import axios from "axios";
 import { refreshSessionFromFirebaseAuth } from "@/lib/authService";
+import { getApiBaseUrl } from "@/lib/runtimeConfig";
 import { clearActiveExamSession, getActiveExamId } from "@/services/examSession";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: getApiBaseUrl(),
   timeout: 10000,
 });
 

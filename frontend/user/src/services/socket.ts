@@ -1,10 +1,7 @@
 import { io, type Socket } from "socket.io-client";
+import { getSocketUrl } from "@/lib/runtimeConfig";
 
 let socket: Socket | null = null;
-
-function getSocketUrl() {
-  return import.meta.env.VITE_SOCKET_URL;
-}
 
 function getSocketAuth() {
   const token = localStorage.getItem("user_token");
