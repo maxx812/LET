@@ -34,6 +34,7 @@ const DEFAULT_TOPICS = [
 const defaultCorsOrigins = ["http://localhost:3000", "http://localhost:3001"];
 const configuredCorsOrigins = [
   ...toStringArray(process.env.FRONTEND_URL, []),
+  ...toStringArray(process.env.ADMIN_URL, []),
   ...toStringArray(process.env.ADMIN_FRONTEND_URL, []),
   ...toStringArray(process.env.CORS_ORIGIN, [])
 ];

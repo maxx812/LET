@@ -17,14 +17,8 @@ const apiLimiter = rateLimit({
   skip: () => isDev // Skip rate limiting entirely in development
 });
 
-function corsOrigin(origin, callback) {
-  if (!origin || config.allowAllCorsOrigins || config.corsOrigins.includes(origin)) {
-    callback(null, true);
-    return;
-  }
+// CORS configuration is handled via config.corsOrigins derived from ENV vars
 
-  callback(new Error("CORS origin is not allowed"));
-}
 
 export function createApp() {
   const app = express();
@@ -36,16 +30,20 @@ export function createApp() {
       }
     })
   );
-  app.use(cors({ origin: corsOrigin, credentials: true }));
+  app.use(cors({ origin: config.corsOrigins, credentials: true }));
   app.use(apiLimiter);
   app.use(express.json({ limit: config.requestBodyLimit }));
   app.use(express.urlencoded({ extended: false }));
 
-  app.get("/health", (_req, res) => {
-    res.json({ success: true, status: "ok" });
+  app.get("/api/health", (_req, res) => {
+    res.json({
+      status: "ok",
+      message: "Backend running"
+    });
   });
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/exam", userRoutes);
   app.use("/api/user", userRoutes);
   app.use("/api/admin", adminRoutes);
 

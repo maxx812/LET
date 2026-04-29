@@ -144,6 +144,10 @@ export function registerSocketHandlers(io) {
       await handleJoinExam(io, socket, examId, ack);
     });
 
+    socket.on("joinExam", async ({ examId } = {}, ack) => {
+      await handleJoinExam(io, socket, examId, ack);
+    });
+
     socket.on("exam:leave", async ({ examId } = {}, ack) => {
       const targetExamId = examId || socket.data.examId;
       if (targetExamId) {
