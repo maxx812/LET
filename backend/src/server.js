@@ -2,11 +2,12 @@ import http from "http";
 import mongoose from "mongoose";
 import { Server as SocketIOServer } from "socket.io";
 import { createApp } from "./app.js";
-import { config } from "./config/env.js";
+import { config, validateConfig } from "./config/env.js";
 import { startExamScheduler, stopExamScheduler } from "./services/exam.scheduler.js";
 import { registerSocketHandlers } from "./sockets/socket.server.js";
 import { connectRedis, disconnectRedis } from "./shared/redis/redis.client.js";
 
+validateConfig();
 mongoose.set("strictQuery", true);
 
 const app = createApp();

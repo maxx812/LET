@@ -17,8 +17,16 @@ const apiLimiter = rateLimit({
   skip: () => isDev // Skip rate limiting entirely in development
 });
 
-// CORS configuration is handled via config.corsOrigins derived from ENV vars
-
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+  if (config.allowAllCorsOrigins) return true;
+  if (config.corsOrigins.includes(origin)) return true;
+  
+  // Allow all Vercel preview deployments
+  if (origin.endsWith(".vercel.app")) return true;
+  
+  return false;
+}
 
 export function createApp() {
   const app = express();
@@ -30,22 +38,33 @@ export function createApp() {
       }
     })
   );
-  app.use(cors({ origin: config.corsOrigins, credentials: true }));
+  app.use(cors({ 
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS origin is not allowed"));
+      }
+    }, 
+    credentials: true 
+  }));
   app.use(apiLimiter);
   app.use(express.json({ limit: config.requestBodyLimit }));
   app.use(express.urlencoded({ extended: false }));
 
   app.get("/api/health", (_req, res) => {
-    res.json({
-      status: "ok",
-      message: "Backend running"
-    });
+    res.json({ status: "ok" });
   });
 
   app.use("/api/auth", authRoutes);
   app.use("/api/exam", userRoutes);
   app.use("/api/user", userRoutes);
   app.use("/api/admin", adminRoutes);
+
+  // Fallback aliases for requests missing the /api prefix
+  app.use("/auth", authRoutes);
+  app.use("/user", userRoutes);
+  app.use("/admin", adminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

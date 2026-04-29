@@ -44,11 +44,11 @@ const corsOrigins = configuredCorsOrigins.length
 
 export const config = Object.freeze({
   env: process.env.NODE_ENV || "development",
-  port: toNumber(process.env.PORT, 4000),
-  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/live_exam",
+  port: toNumber(process.env.PORT, 5000),
+  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI,
   redisUrl: process.env.REDIS_URL || "redis://127.0.0.1:6379",
   corsOrigins,
-  jwtSecret: process.env.JWT_SECRET || "replace_this_with_a_long_random_secret",
+  jwtSecret: process.env.JWT_SECRET,
   jwtExpiry: process.env.JWT_EXPIRY || "12h",
   firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "",
   allowAllCorsOrigins: corsOrigins.includes("*"),
@@ -65,6 +65,17 @@ export const config = Object.freeze({
   requestBodyLimit: process.env.REQUEST_BODY_LIMIT || "1mb",
   allowedQuestionTopics: toStringArray(process.env.QUESTION_TOPICS, DEFAULT_TOPICS)
 });
+
+export function validateConfig() {
+  const required = ["mongoUri", "jwtSecret"];
+  const missing = required.filter((key) => !config[key]);
+
+  if (missing.length > 0) {
+    console.error(`ERROR: Missing required environment variables: ${missing.join(", ")}`);
+    console.error("The server will now shut down.");
+    process.exit(1);
+  }
+}
 
 export function isProduction() {
   return config.env === "production";
