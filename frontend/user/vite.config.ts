@@ -10,7 +10,11 @@ const backendOrigin = process.env.VITE_BACKEND_ORIGIN || "http://localhost:4000"
 export default defineConfig(({ command }) => ({
   plugins: [
     ...(command === "build" && process.env.CLOUDFLARE ? [cloudflare({ viteEnvironment: { name: "ssr" } })] : []),
-    tanstackStart(),
+    tanstackStart({
+      spa: {
+        enabled: true,
+      },
+    }),
     react(),
     tailwindcss(),
   ],
@@ -30,6 +34,9 @@ export default defineConfig(({ command }) => ({
         changeOrigin: true,
       },
     },
+  },
+  preview: {
+    host: "127.0.0.1",
   },
   resolve: {
     alias: {
