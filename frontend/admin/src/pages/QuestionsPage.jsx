@@ -108,14 +108,29 @@ export default function QuestionsPage() {
   async function handleCsvUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!filterExamType || !filterSubject) {
+      if (!window.confirm("No Exam/Subject selected in filters. CSV must contain these IDs in columns. Continue?")) {
+        if (csvInputRef.current) csvInputRef.current.value = "";
+        return;
+      }
+    }
+
     setUploading(true);
     setUploadResult(null);
     try {
       const fd = new FormData();
       fd.append("file", file);
+      if (filterExamType) fd.append("examTypeId", filterExamType);
+      if (filterSubject) fd.append("subjectId", filterSubject);
+      
       const data = await bulkUploadQuestions(fd);
-      setUploadResult(data.report?.summary || data.report || null);
-      showToast("CSV uploaded successfully!");
+      const summary = data.report?.summary || data.report || { insertedCount: 0 };
+      setUploadResult(summary);
+      
+      const message = `Result: ${summary.insertedCount} added, ${summary.skippedCount} skipped, ${summary.invalidCount} invalid`;
+      showToast(message, summary.insertedCount > 0 ? "success" : "error");
+      
       loadQuestions();
     } catch (err) {
       showToast(err?.response?.data?.message || "CSV upload failed", "error");
@@ -129,8 +144,8 @@ export default function QuestionsPage() {
     setLoading(true);
     try {
       const data = await fetchQuestions({ 
-        examTypeId: filterExamType, 
-        subjectId: filterSubject,
+        examTypeId: filterExamType || undefined, 
+        subjectId: filterSubject || undefined,
         topic: topic !== "" ? topic : undefined
       });
       const list = data.items || data.questions || [];
@@ -141,8 +156,8 @@ export default function QuestionsPage() {
         difficulty: q.difficulty || "medium",
         correctAnswer: q.correctOptionKey || q.correctAnswer || "A",
       })));
-    } catch {
-      // Backend offline
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Failed to load questions", "error");
     } finally {
       setLoading(false);
     }

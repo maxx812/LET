@@ -228,7 +228,7 @@ export const adminService = {
     return toQuestionResponse(question);
   },
 
-  async bulkUploadQuestions(file, actorId) {
+  async bulkUploadQuestions(file, actorId, targetExamTypeId = null, targetSubjectId = null) {
     const rows = parseCsvText(file.buffer.toString("utf8"));
     if (rows.length < 2) {
       throw new AppError(400, "CSV must contain a header row and at least one question row", {
@@ -257,7 +257,11 @@ export const adminService = {
     for (const [index, row] of dataRows.entries()) {
       const rowNumber = index + 2;
       const rawRow = mapCsvRow(headers, row);
-      const payload = buildCsvQuestionPayload(rawRow);
+      const payload = buildCsvQuestionPayload({
+        ...rawRow,
+        examType: rawRow.examType || targetExamTypeId,
+        subject: rawRow.subject || targetSubjectId
+      });
       const { value, error } = createQuestionSchema.body.validate(payload, {
         abortEarly: false,
         stripUnknown: true,

@@ -17,11 +17,11 @@ export default function DashboardPage({ data, onRefresh }) {
   ];
 
   const metrics = [
-    { key: "liveExams", label: "Live Exams", icon: Monitor, color: "destructive", value: data.liveExams ?? data.activeExams, sub: "Running now", trend: "+2", up: true },
-    { key: "usersOnline", label: "Users Online", icon: Users, color: "success", value: data.usersOnline, sub: "Via Socket.io", trend: "+12", up: true },
-    { key: "totalQuestions", label: "Questions", icon: FileQuestion, color: "info", value: data.totalQuestions ?? "—", sub: "In bank", trend: "+48", up: true },
-    { key: "totalExams", label: "Total Exams", icon: ClipboardList, color: "accent", value: data.totalExams ?? data.examsToday, sub: "Created", trend: "+5", up: true },
-    { key: "totalUsers", label: "Registered", icon: Users, color: "primary", value: data.totalUsers ?? "—", sub: "Users", trend: "+34", up: true },
+    { key: "liveExams", label: "Live Exams", icon: Monitor, color: "destructive", value: data.liveExams ?? data.activeExams, sub: "Running now" },
+    { key: "usersOnline", label: "Users Online", icon: Users, color: "success", value: data.usersOnline, sub: "Via Socket.io" },
+    { key: "totalQuestions", label: "Questions", icon: FileQuestion, color: "info", value: data.totalQuestions ?? "—", sub: "In bank" },
+    { key: "totalExams", label: "Total Exams", icon: ClipboardList, color: "accent", value: data.totalExams ?? data.examsToday, sub: "Created" },
+    { key: "totalUsers", label: "Registered", icon: Users, color: "primary", value: data.totalUsers ?? "—", sub: "Users" },
   ];
 
   const colorMap = {

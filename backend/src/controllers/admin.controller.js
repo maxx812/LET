@@ -38,7 +38,8 @@ export async function updateQuestionController(req, res, next) {
 
 export async function bulkUploadQuestionsController(req, res, next) {
   try {
-    const report = await adminService.bulkUploadQuestions(req.file, req.auth.sub);
+    const { examTypeId, subjectId } = req.body;
+    const report = await adminService.bulkUploadQuestions(req.file, req.auth.sub, examTypeId, subjectId);
     res.status(201).json({ success: true, report });
   } catch (error) {
     next(error);

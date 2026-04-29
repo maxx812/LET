@@ -82,11 +82,11 @@ export const deleteQuestionSchema = {
 
 export const listQuestionsSchema = {
   query: Joi.object({
-    topic: Joi.string().trim(),
-    examTypeId: objectIdSchema,
-    subjectId: objectIdSchema,
-    difficulty: Joi.string().valid(...QUESTION_DIFFICULTIES),
-    status: Joi.string().valid("active", "archived"),
+    topic: Joi.string().trim().allow(""),
+    examTypeId: objectIdSchema.allow(""),
+    subjectId: objectIdSchema.allow(""),
+    difficulty: Joi.string().valid(...QUESTION_DIFFICULTIES, ""),
+    status: Joi.string().valid("active", "archived", ""),
     search: Joi.string().trim().max(160).allow(""),
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20)
