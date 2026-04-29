@@ -37,6 +37,8 @@ yarn-error.log*
 !manifest.json
 !composer.json
 !*.schema.json
+!vercel.json
+!wrangler.jsonc
 *-firebase-adminsdk-*.json
 service-account.json
 google-services.json

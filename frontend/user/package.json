@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
+    "build:vercel": "NITRO_PRESET=vercel vite build && tsc --noEmit",
     "build:dev": "vite build --mode development && tsc --noEmit",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
