@@ -19,6 +19,7 @@ import {
   getActiveExamSession,
   markExamSubmitted,
 } from "@/services/examSession";
+import { getStoredUser } from "@/lib/authService";
 
 export const Route = createFileRoute("/exam")({
   head: () => ({
@@ -58,6 +59,7 @@ function serializeAnswerSnapshot(
 
 function ExamPage() {
   const navigate = useNavigate();
+  const user = getStoredUser();
   const { examId: activeExamId, roomId, authorized } = getActiveExamSession();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
@@ -372,6 +374,23 @@ function ExamPage() {
 
   function submit() {
     void submitFinal("manual");
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-focus text-primary-foreground">
+        <div className="max-w-md w-full rounded-[2.5rem] bg-white/5 border border-white/10 p-10 text-center backdrop-blur-xl">
+          <Shield className="h-16 w-16 text-warning mx-auto mb-6 scale-110" />
+          <h2 className="text-display text-3xl font-black mb-3">LOGIN REQUIRED</h2>
+          <p className="text-primary-foreground/60 leading-relaxed mb-8">
+            Please sign in to your account to participate in this live exam and track your ranking.
+          </p>
+          <button onClick={() => navigate({ to: "/" })} className="inline-flex h-12 items-center justify-center rounded-xl bg-accent px-8 font-bold hover:brightness-110 transition-all text-accent-foreground">
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthorized || !roomId || !activeExamId) {

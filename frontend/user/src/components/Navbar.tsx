@@ -192,6 +192,39 @@ export function Navbar() {
             >
               <Swords className="h-4 w-4" /> Join Live Exam
             </Link>
+
+            <div className="mt-4 pt-4 border-t border-border/60">
+              {mounted ? (
+                user ? (
+                  <div className="grid gap-2">
+                    <div className="flex items-center gap-3 px-3 py-2">
+                       <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-base">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => { handleLogout(); setOpen(false); }} 
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { setIsAuthOpen(true); setOpen(false); }} 
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-3 text-sm font-bold text-foreground hover:bg-secondary/80 transition-colors"
+                  >
+                    Sign In to Account
+                  </button>
+                )
+              ) : (
+                <div className="h-12 w-full animate-pulse rounded-xl bg-secondary/50" />
+              )}
+            </div>
           </div>
         </div>
       )}
