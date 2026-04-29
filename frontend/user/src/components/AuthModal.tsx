@@ -88,9 +88,10 @@ export function AuthModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex justify-center items-start md:items-center p-4 bg-background/80 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className={cn(
-        "relative w-full rounded-[2.5rem] border border-border bg-card p-8 shadow-pop transition-all duration-500",
+        "relative w-full border border-border bg-card p-6 md:p-8 shadow-pop transition-all duration-500 my-4 md:my-0",
+        "rounded-[1.5rem] md:rounded-[2.5rem]",
         step === 1 ? "max-w-sm animate-slide-up" : "max-w-2xl animate-scale-in"
       )}>
         
@@ -144,17 +145,18 @@ export function AuthModal({
           </div>
         ) : (
           <div className="space-y-8 animate-fade-in">
-            <div className="flex items-center gap-6 pb-6 border-b border-border">
-              <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
-                <Check size={28} className="text-success" />
+            <div className="flex items-center gap-4 md:gap-6 pb-6 border-b border-border">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                <Check size={20} className="text-success md:hidden" />
+                <Check size={28} className="text-success hidden md:block" />
               </div>
               <div>
-                <h2 className="text-2xl font-black font-display tracking-tight">One Last Step, {user?.name.split(' ')[0]}!</h2>
-                <p className="text-sm text-muted-foreground font-medium">Please complete your student profile to get personalized exams.</p>
+                <h2 className="text-xl md:text-2xl font-black font-display tracking-tight leading-tight">One Last Step, {user?.name.split(' ')[0]}!</h2>
+                <p className="text-xs md:text-sm text-muted-foreground font-medium mt-1">Complete your student profile for personalized exams.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {/* Phone */}
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
@@ -163,7 +165,7 @@ export function AuthModal({
                 <input 
                   type="tel" 
                   placeholder="10-digit mobile" 
-                  className="w-full h-[54px] rounded-2xl border border-border bg-background px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                   value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                 />
@@ -178,7 +180,7 @@ export function AuthModal({
                       key={g}
                       onClick={() => setFormData({...formData, gender: g})}
                       className={cn(
-                        "flex-1 h-[54px] rounded-2xl border text-sm font-bold transition-all",
+                        "flex-1 h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border text-xs md:text-sm font-bold transition-all",
                         formData.gender === g ? "bg-primary text-primary-foreground border-primary shadow-soft" : "bg-background border-border hover:border-primary/50"
                       )}
                     >
@@ -194,7 +196,7 @@ export function AuthModal({
                   <MapPin size={12} className="text-primary" /> District
                 </label>
                 <select 
-                  className="w-full h-[54px] rounded-2xl border border-border bg-background px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.district}
                   onChange={e => setFormData({...formData, district: e.target.value})}
                 >
@@ -209,7 +211,7 @@ export function AuthModal({
                   <GraduationCap size={12} className="text-primary" /> Target Exam
                 </label>
                 <select 
-                  className="w-full h-[54px] rounded-2xl border border-border bg-background px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.targetExamTypeId}
                   onChange={e => setFormData({...formData, targetExamTypeId: e.target.value})}
                 >
@@ -222,7 +224,7 @@ export function AuthModal({
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Reservation Category</label>
                 <select 
-                  className="w-full h-[54px] rounded-2xl border border-border bg-background px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.category}
                   onChange={e => setFormData({...formData, category: e.target.value})}
                 >
@@ -235,7 +237,7 @@ export function AuthModal({
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Education</label>
                 <select 
-                  className="w-full h-[54px] rounded-2xl border border-border bg-background px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.education}
                   onChange={e => setFormData({...formData, education: e.target.value})}
                 >

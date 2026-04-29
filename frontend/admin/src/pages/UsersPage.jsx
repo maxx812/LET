@@ -8,6 +8,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -41,8 +42,52 @@ export default function UsersPage() {
       await toggleUserStatus(id, action);
       setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: action === "activate" } : u));
     } catch {
-      // network error
+      alert("Error: Status could not be updated.");
     }
+  };
+
+  const UserDetailsModal = ({ user, onClose }) => {
+    if (!user) return null;
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
+        <div className="relative w-full max-w-lg rounded-[2rem] border border-border bg-card p-8 shadow-pop animate-scale-in">
+          <button onClick={onClose} className="absolute right-6 top-6 p-2 rounded-full hover:bg-secondary text-muted-foreground transition-all">
+            <RefreshCw size={20} />
+          </button>
+          
+          <div className="flex flex-col items-center mb-8">
+             <div className={cn(
+              "w-20 h-20 rounded-3xl text-2xl font-black flex items-center justify-center mb-4 ring-4",
+              user.role === "admin" ? "bg-gradient-accent text-accent-foreground ring-accent/20" : "bg-primary/10 text-primary ring-primary/10"
+            )}>
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+            <h2 className="text-2xl font-black font-display tracking-tight text-foreground">{user.name}</h2>
+            <p className="text-muted-foreground font-medium">{user.email}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             {[
+               { label: "Mobile", value: user.phone || "—", icon: Mail },
+               { label: "District", value: user.district || "—", icon: Filter },
+               { label: "Category", value: user.category || "—", icon: TrendingUp },
+               { label: "Gender", value: user.gender || "—", icon: Users },
+               { label: "Education", value: user.education || "—", icon: Database },
+               { label: "Status", value: user.isActive ? "Active" : "Suspended", icon: Shield },
+             ].map(f => (
+               <div key={f.label} className="bg-secondary/30 p-3 rounded-2xl border border-border/40">
+                 <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">{f.label}</div>
+                 <div className="text-sm font-bold text-foreground truncate">{f.value}</div>
+               </div>
+             ))}
+          </div>
+
+          <button onClick={onClose} className="w-full mt-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition-all">
+            Close Details
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -72,7 +117,7 @@ export default function UsersPage() {
           { label: "Total Users", value: users.length, icon: Database, color: "bg-primary/10 text-primary" },
           { label: "Students", value: students, icon: UserCheck, color: "bg-success/10 text-success" },
           { label: "Admins", value: admins, icon: Shield, color: "bg-accent/12 text-accent-foreground" },
-          { label: "Suspended", value: users.filter(u => u.role === "suspended").length, icon: Ban, color: "bg-destructive/10 text-destructive" },
+          { label: "Suspended", value: users.filter(u => u.isActive === false).length, icon: Ban, color: "bg-destructive/10 text-destructive" },
         ].map(s => {
           const Icon = s.icon;
           return (
@@ -137,7 +182,7 @@ export default function UsersPage() {
                   <div className={cn(
                     "w-11 h-11 rounded-2xl text-xs font-extrabold flex items-center justify-center shrink-0 ring-2 transition-all",
                     u.role === "admin" ? "bg-gradient-accent text-accent-foreground ring-accent/25" :
-                    u.role === "suspended" ? "bg-destructive/15 text-destructive ring-destructive/15" :
+                    u.isActive === false ? "bg-destructive/15 text-destructive ring-destructive/15" :
                     "bg-primary/12 text-primary ring-primary/15"
                   )}>
                     {u.name?.split(" ").map((w) => w[0]).join("").toUpperCase() || "?"}
@@ -150,11 +195,11 @@ export default function UsersPage() {
                       <span className={cn(
                         "inline-flex items-center gap-1 text-[0.5625rem] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider border shrink-0",
                         u.role === "admin" ? "bg-accent/12 text-accent-foreground border-accent/20" :
-                        u.role === "suspended" ? "bg-destructive/12 text-destructive border-destructive/20" :
+                        u.isActive === false ? "bg-destructive/12 text-destructive border-destructive/20" :
                         "bg-primary/8 text-primary border-primary/15"
                       )}>
-                        {u.role === "admin" ? <Shield size={9} /> : u.role === "suspended" ? <Ban size={9} /> : <UserCheck size={9} />}
-                        {u.role}
+                        {u.role === "admin" ? <Shield size={9} /> : u.isActive === false ? <Ban size={9} /> : <UserCheck size={9} />}
+                        {u.isActive === false ? "Suspended" : u.role}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -169,12 +214,19 @@ export default function UsersPage() {
 
                   {/* Actions */}
                   <div className="flex gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                    <button className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all" title="View Profile">
+                    <button 
+                      onClick={() => setSelectedUser(u)}
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all" 
+                      title="View Profile"
+                    >
                       <Eye size={15} />
                     </button>
                     <button 
-                      className="p-2 rounded-xl text-destructive/50 hover:text-destructive hover:bg-destructive/10 transition-all disabled:opacity-30" 
-                      title="Suspend"
+                      className={cn(
+                        "p-2 rounded-xl transition-all disabled:opacity-30",
+                        u.isActive === false ? "text-success/50 hover:text-success hover:bg-success/10" : "text-destructive/50 hover:text-destructive hover:bg-destructive/10"
+                      )}
+                      title={u.isActive === false ? "Activate" : "Suspend"}
                       onClick={() => handleSuspend(u._id)}
                       disabled={u.role === "admin"}
                     >
@@ -196,6 +248,11 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      <UserDetailsModal 
+        user={selectedUser} 
+        onClose={() => setSelectedUser(null)} 
+      />
     </div>
   );
 }

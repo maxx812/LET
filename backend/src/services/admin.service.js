@@ -372,7 +372,7 @@ export const adminService = {
 
   async listUsers() {
     return UserModel.find()
-      .select("name email role authProvider lastLoginAt createdAt isActive")
+      .select("name email role authProvider district phone education category gender lastLoginAt createdAt isActive")
       .sort({ createdAt: -1 })
       .lean();
   },
