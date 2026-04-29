@@ -1,11 +1,11 @@
-import { config } from "../../config/env.js";
-import { connectRedis } from "../../shared/redis/redis.client.js";
-import { AppError } from "../../shared/errors/app-error.js";
-import { UserModel } from "../user/user.model.js";
-import { ExamAttemptModel } from "./exam-attempt.model.js";
+import { config } from "../config/env.js";
+import { ExamAttemptModel } from "../models/exam-attempt.model.js";
+import { ExamRegistrationModel } from "../models/exam-registration.model.js";
+import { ExamModel } from "../models/exam.model.js";
+import { UserModel } from "../models/user.model.js";
+import { AppError } from "../shared/errors/app-error.js";
+import { connectRedis } from "../shared/redis/redis.client.js";
 import { redisKeys } from "./exam-engine.redis.js";
-import { ExamModel } from "./exam.model.js";
-import { ExamRegistrationModel } from "./exam-registration.model.js";
 import { examService } from "./exam.service.js";
 
 const EXAM_CACHE_TTL_MS = 15_000;

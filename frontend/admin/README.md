@@ -1,4 +1,4 @@
-# Maharashtra Police Bharti - Admin Frontend
+# ExamStrike Admin Frontend
 
 Production-style React SPA admin panel for managing:
 
@@ -21,9 +21,9 @@ npm run dev
 
 ## Environment
 
-Create `.env` file in `Admin-Frontend`:
+Create `.env` file in `frontend/admin`:
 
 ```env
-VITE_API_BASE_URL=http://localhost:4000/api
+VITE_API_URL=http://localhost:4000/api
 VITE_SOCKET_URL=http://localhost:4000
 ```

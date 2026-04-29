@@ -1,8 +1,8 @@
-import { AppError } from "../../shared/errors/app-error.js";
-import { serializeAuthUser } from "../../shared/utils/jwt.js";
-import { examEngineService } from "../exam/exam-engine.service.js";
-import { examService } from "../exam/exam.service.js";
-import { UserModel } from "./user.model.js";
+import { UserModel } from "../models/user.model.js";
+import { AppError } from "../shared/errors/app-error.js";
+import { serializeAuthUser } from "../shared/utils/jwt.js";
+import { examEngineService } from "./exam-engine.service.js";
+import { examService } from "./exam.service.js";
 
 export const userService = {
   async getProfile(userId) {

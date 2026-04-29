@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import { AppError } from "../../shared/errors/app-error.js";
-import { serializeAuthUser, signAccessToken } from "../../shared/utils/jwt.js";
-import { UserModel } from "../user/user.model.js";
+import { UserModel } from "../models/user.model.js";
+import { AppError } from "../shared/errors/app-error.js";
+import { serializeAuthUser, signAccessToken } from "../shared/utils/jwt.js";
 import { verifyFirebaseIdToken } from "./firebase-verifier.js";
 
 export const authService = {

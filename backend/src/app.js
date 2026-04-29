@@ -3,9 +3,9 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { config } from "./config/env.js";
-import { adminRoutes } from "./modules/admin/admin.routes.js";
-import { authRoutes } from "./modules/auth/auth.routes.js";
-import { userRoutes } from "./modules/user/user.routes.js";
+import { adminRoutes } from "./routes/admin.routes.js";
+import { authRoutes } from "./routes/auth.routes.js";
+import { userRoutes } from "./routes/user.routes.js";
 import { errorHandler, notFoundHandler } from "./shared/middleware/error.middleware.js";
 
 const isDev = config.env === "development";
@@ -18,7 +18,7 @@ const apiLimiter = rateLimit({
 });
 
 function corsOrigin(origin, callback) {
-  if (!origin || config.corsOrigins.includes("*") || config.corsOrigins.includes(origin)) {
+  if (!origin || config.allowAllCorsOrigins || config.corsOrigins.includes(origin)) {
     callback(null, true);
     return;
   }

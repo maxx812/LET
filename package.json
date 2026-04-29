@@ -1,5 +1,5 @@
 {
-  "name": "let-monorepo",
+  "name": "examstrike-monorepo",
   "version": "1.0.0",
   "description": "ExamStrike Project Monorepo",
   "private": true,
@@ -18,7 +18,7 @@
     "build:user": "npm run build -w frontend/user",
     "build:admin": "npm run build -w frontend/admin",
     "build:backend": "npm run build -w backend",
-    "lint": "npm run lint -w backend && npm run lint -w frontend/user && npm run lint -w frontend/admin"
+    "lint": "npm run lint -w frontend/user"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

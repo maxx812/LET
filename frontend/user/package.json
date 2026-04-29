@@ -6,18 +6,15 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
-    "build:vercel": "NITRO_PRESET=vercel vite build && tsc --noEmit",
+    "build:vercel": "npm run build",
     "build:dev": "vite build --mode development && tsc --noEmit",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "deploy": "npm run build && wrangler deploy",
-    "cf-typegen": "wrangler types",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@tanstack/react-router": "^1.168.0",
-    "@tanstack/react-start": "^1.167.14",
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
     "firebase": "^12.12.1",
@@ -29,7 +26,6 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.25.5",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^22.16.5",
@@ -47,7 +43,6 @@
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.3.1",
-    "wrangler": "^4.82.2"
+    "vite": "^7.3.1"
   }
 }

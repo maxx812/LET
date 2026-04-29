@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { config } from "../../config/env.js";
+import { config } from "../config/env.js";
 
 export const QUESTION_OPTION_KEYS = ["A", "B", "C", "D"];
 export const QUESTION_DIFFICULTIES = ["easy", "medium", "hard"];

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { config } from "../../config/env.js";
-import { AppError } from "../../shared/errors/app-error.js";
-import { ExamModel } from "./exam.model.js";
-import { ExamRegistrationModel } from "./exam-registration.model.js";
-import { ExamRoomModel } from "./exam-room.model.js";
-import { QuestionModel } from "./question.model.js";
+import { config } from "../config/env.js";
+import { ExamRegistrationModel } from "../models/exam-registration.model.js";
+import { ExamRoomModel } from "../models/exam-room.model.js";
+import { ExamModel } from "../models/exam.model.js";
+import { QuestionModel } from "../models/question.model.js";
+import { AppError } from "../shared/errors/app-error.js";
 
 const DISTRIBUTION_RATIOS = [
   { key: "easy", ratio: 0.3, priority: 2 },

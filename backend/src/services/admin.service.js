@@ -1,22 +1,22 @@
-import { config } from "../../config/env.js";
-import { AppError } from "../../shared/errors/app-error.js";
-import { normalizeCsvHeader, parseCsvText } from "../../shared/utils/csv.js";
-import { buildQuestionContentHash } from "../../shared/utils/question-hash.js";
+import { config } from "../config/env.js";
+import { AppError } from "../shared/errors/app-error.js";
+import { normalizeCsvHeader, parseCsvText } from "../shared/utils/csv.js";
+import { buildQuestionContentHash } from "../shared/utils/question-hash.js";
 import {
   buildQuestionDocument,
   normalizeQuestionPayload,
   toQuestionResponse
-} from "../../shared/utils/question-payload.js";
-import { UserModel } from "../user/user.model.js";
-import { createQuestionSchema } from "./admin.validation.js";
-import { ExamModel } from "../exam/exam.model.js";
-import { ExamRoomModel } from "../exam/exam-room.model.js";
-import { ExamAttemptModel } from "../exam/exam-attempt.model.js";
-import { QuestionModel } from "../exam/question.model.js";
-import { ExamTypeModel } from "../exam/exam-type.model.js";
-import { SubjectModel } from "../exam/subject.model.js";
-import { examService } from "../exam/exam.service.js";
-import { SettingsModel, DEFAULT_SETTINGS } from "./settings.model.js";
+} from "../shared/utils/question-payload.js";
+import { ExamAttemptModel } from "../models/exam-attempt.model.js";
+import { ExamRoomModel } from "../models/exam-room.model.js";
+import { ExamTypeModel } from "../models/exam-type.model.js";
+import { ExamModel } from "../models/exam.model.js";
+import { QuestionModel } from "../models/question.model.js";
+import { SettingsModel, DEFAULT_SETTINGS } from "../models/settings.model.js";
+import { SubjectModel } from "../models/subject.model.js";
+import { UserModel } from "../models/user.model.js";
+import { createQuestionSchema } from "../validations/admin.validation.js";
+import { examService } from "./exam.service.js";
 
 const CSV_HEADER_MAP = {
   questiontext: "questionText",

@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate, authorizeRoles } from "../../shared/middleware/auth.middleware.js";
-import { validateRequest } from "../../shared/middleware/validate.middleware.js";
+import { authenticate, authorizeRoles } from "../shared/middleware/auth.middleware.js";
+import { validateRequest } from "../shared/middleware/validate.middleware.js";
 import {
   adminLoginController,
   firebaseLoginController,
   verifySessionController
-} from "./auth.controller.js";
-import { adminLoginSchema, firebaseLoginSchema } from "./auth.validation.js";
+} from "../controllers/auth.controller.js";
+import { adminLoginSchema, firebaseLoginSchema } from "../validations/auth.validation.js";
 
 export const authRoutes = Router();
 

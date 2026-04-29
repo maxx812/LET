@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { config } from "../src/config/env.js";
-import { UserModel } from "../src/modules/user/user.model.js";
+import { UserModel } from "../src/models/user.model.js";
 import { signAccessToken, verifyAccessToken } from "../src/shared/utils/jwt.js";
 
 const DEFAULT_EMAIL = "admin@examstrike.com";

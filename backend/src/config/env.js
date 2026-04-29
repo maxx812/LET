@@ -31,7 +31,15 @@ const DEFAULT_TOPICS = [
   "Quantitative Aptitude"
 ];
 
-const corsOrigins = toStringArray(process.env.CORS_ORIGIN, ["http://localhost:3000", "http://localhost:3001"]);
+const defaultCorsOrigins = ["http://localhost:3000", "http://localhost:3001"];
+const configuredCorsOrigins = [
+  ...toStringArray(process.env.FRONTEND_URL, []),
+  ...toStringArray(process.env.ADMIN_FRONTEND_URL, []),
+  ...toStringArray(process.env.CORS_ORIGIN, [])
+];
+const corsOrigins = configuredCorsOrigins.length
+  ? [...new Set(configuredCorsOrigins)]
+  : defaultCorsOrigins;
 
 export const config = Object.freeze({
   env: process.env.NODE_ENV || "development",
@@ -42,6 +50,7 @@ export const config = Object.freeze({
   jwtSecret: process.env.JWT_SECRET || "replace_this_with_a_long_random_secret",
   jwtExpiry: process.env.JWT_EXPIRY || "12h",
   firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "",
+  allowAllCorsOrigins: corsOrigins.includes("*"),
   defaultRoomCapacity: toNumber(process.env.ROOM_CAPACITY, 100),
   schedulerPollIntervalMs: toNumber(process.env.SCHEDULER_POLL_INTERVAL_MS, 5000),
   answerSyncIntervalMs: toNumber(process.env.ANSWER_SYNC_INTERVAL_MS, 5000),

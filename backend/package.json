@@ -1,10 +1,11 @@
 {
-  "name": "live-exam-backend",
+  "name": "examstrike-backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node src/server.js",
+    "build": "node --check src/server.js",
     "start": "node src/server.js",
     "seed:admin": "node scripts/seedAdmin.js",
     "jwt": "node scripts/generateJwt.js"

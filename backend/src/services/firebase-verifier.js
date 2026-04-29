@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { config } from "../../config/env.js";
-import { AppError } from "../../shared/errors/app-error.js";
+import { config } from "../config/env.js";
+import { AppError } from "../shared/errors/app-error.js";
 
 const GOOGLE_CERTS_URL =
   "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";

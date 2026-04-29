@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import { Server as SocketIOServer } from "socket.io";
 import { createApp } from "./app.js";
 import { config } from "./config/env.js";
-import { startExamScheduler, stopExamScheduler } from "./modules/exam/exam.scheduler.js";
-import { registerSocketHandlers } from "./realtime/socket.server.js";
+import { startExamScheduler, stopExamScheduler } from "./services/exam.scheduler.js";
+import { registerSocketHandlers } from "./sockets/socket.server.js";
 import { connectRedis, disconnectRedis } from "./shared/redis/redis.client.js";
 
 mongoose.set("strictQuery", true);
@@ -13,7 +13,7 @@ const app = createApp();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: config.corsOrigins,
+    origin: config.allowAllCorsOrigins ? "*" : config.corsOrigins,
     credentials: true
   }
 });

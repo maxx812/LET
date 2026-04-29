@@ -1,5 +1,5 @@
-import { userService } from "./user.service.js";
-import { adminService } from "../admin/admin.service.js";
+import { adminService } from "../services/admin.service.js";
+import { userService } from "../services/user.service.js";
 
 export async function getExamTypesController(_req, res, next) {
   try {

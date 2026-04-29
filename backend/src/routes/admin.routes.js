@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { config } from "../../config/env.js";
-import { authenticate, authorizeRoles } from "../../shared/middleware/auth.middleware.js";
-import { parseSingleMultipartFile } from "../../shared/utils/multipart.js";
-import { validateRequest } from "../../shared/middleware/validate.middleware.js";
+import { config } from "../config/env.js";
+import { authenticate, authorizeRoles } from "../shared/middleware/auth.middleware.js";
+import { parseSingleMultipartFile } from "../shared/utils/multipart.js";
+import { validateRequest } from "../shared/middleware/validate.middleware.js";
 import {
   analyticsController,
   bulkUploadQuestionsController,
@@ -25,7 +25,7 @@ import {
   createExamTypeController,
   listSubjectsController,
   createSubjectController
-} from "./admin.controller.js";
+} from "../controllers/admin.controller.js";
 import {
   createExamSchema,
   createQuestionSchema,
@@ -36,7 +36,7 @@ import {
   publishExamSchema,
   updateExamSchema,
   updateQuestionSchema
-} from "./admin.validation.js";
+} from "../validations/admin.validation.js";
 
 export const adminRoutes = Router();
 

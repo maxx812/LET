@@ -1,4 +1,4 @@
-import { authService } from "./auth.service.js";
+import { authService } from "../services/auth.service.js";
 
 export async function adminLoginController(req, res, next) {
   try {

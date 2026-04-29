@@ -1,4 +1,4 @@
-import { adminService } from "./admin.service.js";
+import { adminService } from "../services/admin.service.js";
 
 export async function dashboardController(_req, res, next) {
   try {
@@ -191,4 +191,3 @@ export async function createSubjectController(req, res, next) {
     next(error);
   }
 }
-

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { authenticate, authorizeRoles } from "../../shared/middleware/auth.middleware.js";
-import { validateRequest } from "../../shared/middleware/validate.middleware.js";
+import { authenticate, authorizeRoles } from "../shared/middleware/auth.middleware.js";
+import { validateRequest } from "../shared/middleware/validate.middleware.js";
 import {
   getAvailableExamsController,
   getExamLeaderboardController,
@@ -12,7 +12,7 @@ import {
   joinExamController,
   submitAnswerController,
   submitExamController
-} from "./user.controller.js";
+} from "../controllers/user.controller.js";
 import {
   getExamLeaderboardSchema,
   getExamQuestionsSchema,
@@ -20,7 +20,7 @@ import {
   joinExamSchema,
   submitAnswerSchema,
   submitExamSchema
-} from "./user.validation.js";
+} from "../validations/user.validation.js";
 
 export const userRoutes = Router();
 

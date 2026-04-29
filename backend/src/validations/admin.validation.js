@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { config } from "../../config/env.js";
+import { config } from "../config/env.js";
 import {
   QUESTION_DIFFICULTIES,
   QUESTION_LANGUAGES,
   QUESTION_OPTION_KEYS
-} from "../exam/question.model.js";
+} from "../models/question.model.js";
 
 const objectIdSchema = Joi.string().length(24).hex();
 

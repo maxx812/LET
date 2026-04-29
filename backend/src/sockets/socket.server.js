@@ -1,5 +1,5 @@
-import { examEngineService } from "../modules/exam/exam-engine.service.js";
-import { examService } from "../modules/exam/exam.service.js";
+import { examEngineService } from "../services/exam-engine.service.js";
+import { examService } from "../services/exam.service.js";
 import { AppError } from "../shared/errors/app-error.js";
 import { verifyAccessToken } from "../shared/utils/jwt.js";
 
