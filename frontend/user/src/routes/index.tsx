@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { useCountdown, useLeaderboard } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
-import { fetchLiveExams, getApiError, joinExam } from "@/lib/apiClient";
+import { fetchLiveExams, getApiError, joinExam } from "@/services/api";
 import { getStoredUser } from "@/lib/authService";
 
 export const Route = createFileRoute("/")({
