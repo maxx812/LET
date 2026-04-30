@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Users, Wifi, Zap, ArrowLeft, Shield, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
 import { useLobbyPlayerCount, useCountdown } from "@/hooks/useLiveData";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { CircularProgress } from "@/components/CircularProgress";
@@ -99,6 +110,8 @@ function LobbyPage() {
   const secondsLeft = Math.floor(remainingMs / 1000);
   const isTimeUp = exam && remainingMs <= 0;
 
+  const isMobile = useIsMobile();
+
   if (loading) {
     return <div className="p-12 text-center">Loading lobby...</div>;
   }
@@ -161,11 +174,11 @@ function LobbyPage() {
 
         <div className="mt-10 md:mt-16 grid lg:grid-cols-5 gap-8 items-center">
           {/* Big circular timer */}
-          <div className="lg:col-span-3 flex justify-center">
+          <div className="lg:col-span-3 flex justify-center py-4 md:py-0">
             <CircularProgress
               value={progress}
-              size={360}
-              stroke={18}
+              size={isMobile ? 240 : 360}
+              stroke={isMobile ? 12 : 18}
               trackClass="stroke-white/10"
               barClass={cn("transition-colors", urgent ? "stroke-destructive" : "stroke-accent")}
               className={cn(urgent && "animate-pulse-ring rounded-full")}
@@ -179,7 +192,7 @@ function LobbyPage() {
                   className={cn(
                     "text-display font-extrabold tabular animate-count-up",
                     urgent ? "text-destructive" : (isTimeUp ? "text-success" : "text-primary-foreground"),
-                    secondsLeft >= 100 ? "text-7xl" : "text-8xl md:text-9xl",
+                    secondsLeft >= 100 ? "text-5xl md:text-7xl" : "text-7xl md:text-9xl",
                   )}
                 >
                   {isTimeUp ? "READY" : String(Math.max(0, secondsLeft)).padStart(2, "0")}

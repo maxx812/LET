@@ -296,7 +296,7 @@ function ExamPage() {
       setCurrent(clamped);
       setVisited((v) => new Set(v).add(clamped));
     },
-    [],
+    [questions.length],
   );
 
   const select = useCallback(
@@ -455,8 +455,8 @@ function ExamPage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-white border-b-2 border-border shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 md:px-6 h-14 flex items-center justify-between gap-3">
+      <div className="sticky top-0 z-40 bg-white border-b-2 border-border shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 md:px-6 h-14 flex items-center justify-between gap-2 overflow-hidden">
           <div className="min-w-0">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">SSC CGL · Tier 1</div>
             <div className="text-sm font-semibold truncate">Section: <span className="text-primary">{q.section}</span></div>
@@ -472,9 +472,9 @@ function ExamPage() {
                   : "bg-primary text-primary-foreground",
             )}
           >
-            <Clock className="h-4 w-4" />
-            {formatTime(timeLeft)}
-            {lowTime && <AlertTriangle className="h-4 w-4 ml-1" />}
+            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-sm sm:text-lg">{formatTime(timeLeft)}</span>
+            {lowTime && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />}
           </div>
 
           <button
@@ -482,9 +482,9 @@ function ExamPage() {
             disabled={submitting}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-accent px-4 py-2 text-sm font-bold text-accent-foreground shadow-soft hover:shadow-glow transition-all disabled:opacity-60"
           >
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline">Submit Exam</span>
-            <span className="sm:hidden">Submit</span>
+            <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm font-bold">Submit</span>
+            <span className="hidden sm:inline"> Exam</span>
           </button>
         </div>
       </div>
@@ -551,33 +551,33 @@ function ExamPage() {
           </div>
 
           {/* Bottom nav */}
-          <div className="mt-5 flex items-center justify-between gap-3">
+          <div className="mt-5 flex items-center justify-between gap-2 sm:gap-3">
             <button
               onClick={() => goTo(current - 1)}
               disabled={current === 0}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-secondary"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 sm:px-4 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-secondary active:scale-[0.98] transition-all"
             >
-              <ChevronLeft className="h-4 w-4" /> Prev
+              <ChevronLeft className="h-4 w-4" /> <span className="sm:inline">Prev</span>
             </button>
 
-            <div className="text-xs text-muted-foreground hidden sm:block">
-              Shortcuts: <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">A B C D</kbd> · <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">N</kbd> next · <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">R</kbd> review
+            <div className="text-[10px] text-muted-foreground hidden md:block">
+              Shortcuts: <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">A B C D</kbd> · <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">N</kbd> next
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-[2] sm:flex-none items-center gap-2">
               <button
                 onClick={() => {
                   setMarked((m) => new Set(m).add(current));
                   goTo(current + 1);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-warning/40 bg-warning/10 text-warning-foreground px-4 py-2.5 text-sm font-semibold hover:bg-warning/20"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-warning/40 bg-warning/10 text-warning-foreground px-4 py-2.5 text-sm font-semibold hover:bg-warning/20 transition-all"
               >
                 <Flag className="h-4 w-4" /> Review
               </button>
               <button
                 onClick={() => goTo(current + 1)}
                 disabled={current === questions.length - 1}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold disabled:opacity-40 hover:bg-primary/90"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 sm:px-6 py-2.5 text-sm font-bold disabled:opacity-40 hover:bg-primary/90 active:scale-[0.98] transition-all shadow-soft"
               >
                 Next <ChevronRight className="h-4 w-4" />
               </button>

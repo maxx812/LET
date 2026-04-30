@@ -211,6 +211,7 @@ function HomePage() {
                     <span className="font-semibold text-foreground">
                       {targetTime
                         ? targetTime.toLocaleTimeString("en-IN", {
+                            timeZone: "Asia/Kolkata",
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: true,
