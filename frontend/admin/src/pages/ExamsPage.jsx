@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { fetchExams, createExam as createExamApi, publishExam, deleteExam } from "../services/apiClient";
+import { fetchExams, createExam as createExamApi, publishExam, deleteExam, fetchExamTypes, fetchQuestions } from "../services/apiClient";
 import { ClipboardList, Plus, Calendar, Clock, Shuffle, Trash2, RefreshCw, Radio, CheckCircle, Database, Eye, ArrowRight, Zap, X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -21,6 +21,12 @@ export default function ExamsPage() {
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [totalQuestions, setTotalQuestions] = useState(50);
   const [creating, setCreating] = useState(false);
+  const [examTypes, setExamTypes] = useState([]);
+  const [allowedTopics, setAllowedTopics] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [examTypeId, setExamTypeId] = useState("");
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   function showToastMsg(message, type = "success") {
     setToast({ message, type });
@@ -37,7 +43,21 @@ export default function ExamsPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadExams(); }, [loadExams]);
+  useEffect(() => { 
+    loadExams();
+    async function loadMeta() {
+      try {
+        const data = await fetchExamTypes();
+        setExamTypes(data.examTypes || []);
+        
+        // Fetch topics from questions API
+        const qData = await fetchQuestions({ limit: 1 });
+        setAllowedTopics(qData.allowedTopics || []);
+        setSelectedTopics(qData.allowedTopics || []);
+      } catch {}
+    }
+    loadMeta();
+  }, [loadExams]);
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -46,13 +66,20 @@ export default function ExamsPage() {
     setCreating(true);
     try {
       const date = new Date(startsAt).toISOString();
-      await createExamApi({ title, scheduledStartAt: date, durationMinutes, totalQuestions, topics: ["Law", "GK", "Reasoning", "Maths"] });
-      setTitle(""); setStartsAt(""); setDurationMinutes(60); setTotalQuestions(50);
+      await createExamApi({ 
+        title, 
+        scheduledStartAt: date, 
+        durationMinutes, 
+        totalQuestions, 
+        topics: selectedTopics,
+        examTypeId 
+      });
+      setTitle(""); setStartsAt(""); setDurationMinutes(60); setTotalQuestions(50); setExamTypeId("");
       setShowCreate(false);
       showToastMsg("Exam created successfully!");
       loadExams();
     } catch (err) {
-      showToastMsg(err?.response?.data?.message || "Failed to create exam", "error");
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to create exam", "error");
     } finally {
       setCreating(false);
     }
@@ -64,7 +91,9 @@ export default function ExamsPage() {
       await publishExam(id);
       showToastMsg("Exam published!");
       loadExams();
-    } catch { }
+    } catch (err) {
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to publish exam", "error");
+    }
   }
 
   async function handleDelete(id) {
@@ -72,8 +101,10 @@ export default function ExamsPage() {
     try {
       await deleteExam(id);
       setExams((prev) => prev.filter((ex) => (ex._id || ex.id) !== id));
-      showToastMsg("Exam deleted");
-    } catch { }
+      showToastMsg("Exam deleted successfully");
+    } catch (err) {
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to delete exam", "error");
+    }
   }
 
   const examStats = {
@@ -206,6 +237,53 @@ export default function ExamsPage() {
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Exam Type *</label>
+                  <select
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium appearance-none cursor-pointer"
+                    value={examTypeId}
+                    onChange={e => setExamTypeId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Topic Selector */}
+              <div className="mb-5 p-4 rounded-2xl border border-border bg-secondary/20">
+                <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-3">Included Topics *</label>
+                <div className="flex flex-wrap gap-2">
+                  {allowedTopics.map(topic => {
+                    const isSelected = selectedTopics.includes(topic);
+                    return (
+                      <button
+                        key={topic}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTopics(prev => 
+                            isSelected ? prev.filter(t => t !== topic) : [...prev, topic]
+                          );
+                        }}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border",
+                          isSelected 
+                            ? "bg-primary text-primary-foreground border-primary shadow-soft" 
+                            : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                        )}
+                      >
+                        {topic}
+                        {isSelected && <CheckCircle size={12} className="ml-1.5 inline" />}
+                      </button>
+                    )
+                  })}
+                </div>
+                {selectedTopics.length === 0 && (
+                  <p className="mt-2 text-[0.625rem] text-destructive font-bold flex items-center gap-1">
+                    <AlertCircle size={10} /> Select at least one topic
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <button
@@ -288,12 +366,13 @@ export default function ExamsPage() {
                       <button
                         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                         title="View Details"
+                        onClick={() => { setSelectedExam(ex); setShowDetails(true); }}
                       >
                         <Eye size={15} />
                       </button>
                       <button
                         className="p-2 rounded-xl text-destructive/50 hover:text-destructive hover:bg-destructive/10 transition-all"
-                        onClick={() => handleDelete(ex._id)}
+                        onClick={() => handleDelete(ex._id || ex.id)}
                         title="Delete"
                       >
                         <Trash2 size={15} />
@@ -306,6 +385,56 @@ export default function ExamsPage() {
           </div>
         )}
       </div>
+
+      {/* Exam Details Modal */}
+      {showDetails && selectedExam && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card w-full max-w-lg rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="font-display font-bold text-xl">{selectedExam.title}</h2>
+              <button onClick={() => setShowDetails(false)} className="w-8 h-8 rounded-full hover:bg-secondary flex items-center justify-center transition-all">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-2xl bg-secondary/30">
+                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Status</div>
+                    <div className="text-sm font-bold capitalize">{selectedExam.status}</div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-secondary/30">
+                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Questions</div>
+                    <div className="text-sm font-bold">{selectedExam.totalQuestions} Questions</div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-secondary/30">
+                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Starts At</div>
+                    <div className="text-sm font-bold">{new Date(selectedExam.scheduledStartAt).toLocaleString()}</div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-secondary/30">
+                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Duration</div>
+                    <div className="text-sm font-bold">{selectedExam.durationMinutes} Minutes</div>
+                  </div>
+               </div>
+               <div className="p-4 rounded-2xl border border-border bg-primary/5">
+                 <div className="text-[0.625rem] font-bold text-primary uppercase tracking-widest mb-2">Topic Distribution</div>
+                 <div className="flex flex-wrap gap-2">
+                   {selectedExam.topics?.map(t => (
+                     <span key={t} className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[0.6875rem] font-bold">{t}</span>
+                   ))}
+                 </div>
+               </div>
+            </div>
+            <div className="p-6 border-t border-border bg-secondary/20">
+              <button 
+                onClick={() => setShowDetails(false)}
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft transition-all active:scale-[0.98]"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

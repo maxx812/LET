@@ -68,7 +68,8 @@ export async function deleteQuestion(questionId) {
 
 export async function bulkUploadQuestions(formData) {
   const { data } = await apiClient.post("/admin/questions/bulk-upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" }
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 60000
   });
   return data;
 }

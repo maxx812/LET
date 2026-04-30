@@ -29,7 +29,8 @@ export function normalizeQuestionPayload(input) {
       .toLowerCase(),
     marks: Number(input.marks ?? 1),
     negativeMarks: Number(input.negativeMarks ?? 0),
-    source: String(input.source || "").trim()
+    source: String(input.source || "").trim(),
+    status: String(input.status || "active")
   };
 }
 
