@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { config } from "../config/env.js";
 import { AppError } from "../shared/errors/app-error.js";
 import { normalizeCsvHeader, parseCsvText } from "../shared/utils/csv.js";
@@ -231,24 +232,46 @@ export const adminService = {
   },
 
   async bulkUploadQuestions(file, actorId, targetExamTypeId = null, targetSubjectId = null) {
-    const rows = parseCsvText(file.buffer.toString("utf8"));
-    if (rows.length < 2) {
-      throw new AppError(400, "CSV must contain a header row and at least one question row", {
-        code: "CSV_EMPTY"
+    let rows = [];
+    const isJson = file.originalName.toLowerCase().endsWith(".json");
+
+    if (isJson) {
+      try {
+        const data = JSON.parse(file.buffer.toString("utf8"));
+        rows = Array.isArray(data) ? data : [data];
+      } catch (err) {
+        throw new AppError(400, "Invalid JSON format in uploaded file", { code: "INVALID_JSON" });
+      }
+    } else {
+      rows = parseCsvText(file.buffer.toString("utf8"));
+    }
+
+    if (rows.length < (isJson ? 1 : 2)) {
+      throw new AppError(400, "File must contain at least one question row", {
+        code: "FILE_EMPTY"
       });
     }
 
-    const [headerRow, ...dataRows] = rows;
-    const headers = headerRow.map((header) => CSV_HEADER_MAP[normalizeCsvHeader(header)] || "");
-    const missingHeaders = REQUIRED_CSV_HEADERS.filter((header) => !headers.includes(header));
+    let dataRows = [];
+    let headers = [];
 
-    if (missingHeaders.length > 0) {
-      throw new AppError(422, "CSV is missing required columns", {
-        code: "CSV_HEADERS_INVALID",
-        details: {
-          missingHeaders
-        }
+    if (isJson) {
+      dataRows = rows;
+    } else {
+      const [headerRow, ...rest] = rows;
+      headerRow.forEach((header, index) => {
+        const mapped = CSV_HEADER_MAP[normalizeCsvHeader(header)];
+        if (mapped) headers[index] = mapped;
       });
+
+      const missingHeaders = REQUIRED_CSV_HEADERS.filter((h) => !Object.values(headers).includes(h));
+      if (missingHeaders.length > 0) {
+        throw new AppError(422, "CSV is missing required columns", {
+          code: "CSV_HEADERS_INVALID",
+          details: { missingHeaders }
+        });
+      }
+      dataRows = rest;
     }
 
     const validationErrors = [];
@@ -257,9 +280,14 @@ export const adminService = {
     const seenHashes = new Set();
 
     for (const [index, row] of dataRows.entries()) {
-      const rowNumber = index + 2;
-      const rawRow = mapCsvRow(headers, row);
-      const payload = buildCsvQuestionPayload({
+      const rowNumber = index + (isJson ? 1 : 2);
+      const rawRow = isJson ? row : mapCsvRow(headers, row);
+      
+      const payload = isJson ? {
+        ...rawRow,
+        examTypeId: rawRow.examTypeId || targetExamTypeId,
+        subjectId: rawRow.subjectId || targetSubjectId
+      } : buildCsvQuestionPayload({
         ...rawRow,
         examType: rawRow.examType || targetExamTypeId,
         subject: rawRow.subject || targetSubjectId
@@ -303,6 +331,7 @@ export const adminService = {
     );
 
     const insertableRows = [];
+    const now = new Date();
     for (const item of preparedRows) {
       if (existingHashes.has(item.document.contentHash)) {
         duplicateRows.push({
@@ -314,18 +343,26 @@ export const adminService = {
 
       insertableRows.push({
         ...item.document,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: now,
+        updatedAt: now
       });
     }
 
     const bulkResult =
       insertableRows.length > 0
-        ? await QuestionModel.bulkWrite(
-          insertableRows.map((document) => ({
+        ? await QuestionModel.collection.bulkWrite(
+          insertableRows.map((doc) => ({
             updateOne: {
-              filter: { contentHash: document.contentHash },
-              update: { $setOnInsert: document },
+              filter: { contentHash: doc.contentHash },
+              update: { 
+                $setOnInsert: {
+                  ...doc,
+                  examTypeId: new mongoose.Types.ObjectId(doc.examTypeId),
+                  subjectId: new mongoose.Types.ObjectId(doc.subjectId),
+                  createdBy: new mongoose.Types.ObjectId(doc.createdBy),
+                  updatedBy: doc.updatedBy ? new mongoose.Types.ObjectId(doc.updatedBy) : new mongoose.Types.ObjectId(doc.createdBy)
+                } 
+              },
               upsert: true
             }
           })),

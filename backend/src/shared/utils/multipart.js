@@ -54,7 +54,9 @@ export function parseSingleMultipartFile(fieldName, options = {}) {
       "text/csv",
       "application/csv",
       "application/vnd.ms-excel",
-      "application/octet-stream"
+      "application/octet-stream",
+      "text/plain",
+      "application/json"
     ]
   } = options;
 
@@ -99,8 +101,11 @@ export function parseSingleMultipartFile(fieldName, options = {}) {
         });
       }
 
-      if (!file.originalName.toLowerCase().endsWith(".csv")) {
-        throw new AppError(400, "Only CSV uploads are allowed", {
+      const isCsv = file.originalName.toLowerCase().endsWith(".csv");
+      const isJson = file.originalName.toLowerCase().endsWith(".json");
+
+      if (!isCsv && !isJson) {
+        throw new AppError(400, "Only CSV or JSON uploads are allowed", {
           code: "INVALID_FILE_EXTENSION"
         });
       }

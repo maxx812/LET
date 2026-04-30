@@ -152,7 +152,7 @@ export default function QuestionsPage() {
       setPendingFile(null);
       loadQuestions();
     } catch (err) {
-      const errorData = err?.response?.data;
+      const errorData = err?.response?.data?.error || err?.response?.data;
       setUploadReport({
         type: "error",
         title: "Upload Failed",
@@ -364,6 +364,15 @@ export default function QuestionsPage() {
                     </div>
                   )}
 
+                  {uploadReport.details?.received && (
+                    <div className="space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">File Format Received:</h3>
+                      <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-xs font-mono text-destructive">
+                        {uploadReport.details.received}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="bg-secondary/15 rounded-2xl p-5 border border-border/40">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">How to fix this:</h3>
                     <ul className="space-y-3">
@@ -553,7 +562,7 @@ export default function QuestionsPage() {
             {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
             Bulk Upload
           </button>
-          <input type="file" ref={csvInputRef} className="hidden" accept=".csv" onChange={handleCsvUpload} />
+          <input type="file" ref={csvInputRef} className="hidden" accept=".csv,.json" onChange={handleCsvUpload} />
           
           <button 
              onClick={() => setShowForm(!showForm)}
