@@ -16,7 +16,7 @@ const optionSchema = Joi.object({
 });
 
 const questionBody = Joi.object({
-  questionText: Joi.string().trim().min(10).max(2000).required(),
+  questionText: Joi.string().trim().min(5).max(2000).required(),
   options: Joi.array()
     .items(optionSchema)
     .length(4)
@@ -57,7 +57,7 @@ export const updateQuestionSchema = {
     questionId: objectIdSchema.required()
   }),
   body: Joi.object({
-    questionText: Joi.string().trim().min(10).max(2000),
+    questionText: Joi.string().trim().min(5).max(2000),
     options: Joi.array().items(optionSchema).length(4),
     correctOptionKey: Joi.string().valid(...QUESTION_OPTION_KEYS),
     explanation: Joi.string().allow("").max(2000),

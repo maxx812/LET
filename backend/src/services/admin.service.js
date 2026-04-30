@@ -64,9 +64,11 @@ function buildCsvQuestionPayload(row) {
       { key: "C", text: String(row.optionC || "").trim() },
       { key: "D", text: String(row.optionD || "").trim() }
     ],
-    correctOptionKey: String(row.correctOption || "")
-      .trim()
-      .toUpperCase(),
+    correctOptionKey: (() => {
+      const val = String(row.correctOption || "").trim().toUpperCase();
+      const map = { "1": "A", "2": "B", "3": "C", "4": "D" };
+      return map[val] || val;
+    })(),
     topic: String(row.topic || "").trim(),
     examTypeId: row.examType,
     subjectId: row.subject,
@@ -269,6 +271,7 @@ export const adminService = {
       });
 
       if (error) {
+        console.warn(`[BulkUpload] Row ${rowNumber} validation failed:`, error.details);
         validationErrors.push({
           rowNumber,
           reason: error.details.map((detail) => detail.message).join("; ")
@@ -319,15 +322,15 @@ export const adminService = {
     const bulkResult =
       insertableRows.length > 0
         ? await QuestionModel.bulkWrite(
-            insertableRows.map((document) => ({
-              updateOne: {
-                filter: { contentHash: document.contentHash },
-                update: { $setOnInsert: document },
-                upsert: true
-              }
-            })),
-            { ordered: false }
-          )
+          insertableRows.map((document) => ({
+            updateOne: {
+              filter: { contentHash: document.contentHash },
+              update: { $setOnInsert: document },
+              upsert: true
+            }
+          })),
+          { ordered: false }
+        )
         : { upsertedCount: 0 };
 
     const insertedCount = bulkResult.upsertedCount || 0;

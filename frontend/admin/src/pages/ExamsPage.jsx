@@ -15,7 +15,7 @@ export default function ExamsPage() {
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [toast, setToast] = useState(null);
-  
+
   const [title, setTitle] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
@@ -42,7 +42,7 @@ export default function ExamsPage() {
   async function handleCreate(e) {
     e.preventDefault();
     if (!title || !startsAt || !durationMinutes) return;
-    
+
     setCreating(true);
     try {
       const date = new Date(startsAt).toISOString();
@@ -64,7 +64,7 @@ export default function ExamsPage() {
       await publishExam(id);
       showToastMsg("Exam published!");
       loadExams();
-    } catch {}
+    } catch { }
   }
 
   async function handleDelete(id) {
@@ -73,7 +73,7 @@ export default function ExamsPage() {
       await deleteExam(id);
       setExams((prev) => prev.filter((ex) => (ex._id || ex.id) !== id));
       showToastMsg("Exam deleted");
-    } catch {}
+    } catch { }
   }
 
   const examStats = {
@@ -103,9 +103,9 @@ export default function ExamsPage() {
           <p className="admin-page-subtitle">Create, schedule and manage exam sessions</p>
         </div>
         <div className="admin-action-row">
-          <button 
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto" 
-            onClick={loadExams} 
+          <button
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto"
+            onClick={loadExams}
             disabled={loading}
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
@@ -166,9 +166,9 @@ export default function ExamsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
                 <div>
                   <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Exam Title *</label>
-                  <input 
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium" 
-                    placeholder="e.g. Morning Mock 01" 
+                  <input
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
+                    placeholder="e.g. Morning Mock 01"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     required
@@ -176,9 +176,9 @@ export default function ExamsPage() {
                 </div>
                 <div>
                   <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Schedule *</label>
-                  <input 
-                    type="datetime-local" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium" 
+                  <input
+                    type="datetime-local"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
                     value={startsAt}
                     onChange={e => setStartsAt(e.target.value)}
                     required
@@ -186,10 +186,10 @@ export default function ExamsPage() {
                 </div>
                 <div>
                   <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Duration (min)</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium" 
-                    placeholder="60" 
+                  <input
+                    type="number"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
+                    placeholder="60"
                     value={durationMinutes}
                     onChange={e => setDurationMinutes(Number(e.target.value))}
                     required
@@ -197,10 +197,10 @@ export default function ExamsPage() {
                 </div>
                 <div>
                   <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Questions Count</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium" 
-                    placeholder="50" 
+                  <input
+                    type="number"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
+                    placeholder="50"
                     value={totalQuestions}
                     onChange={e => setTotalQuestions(Number(e.target.value))}
                     required
@@ -208,8 +208,8 @@ export default function ExamsPage() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:shadow-pop transition-all w-full sm:w-auto disabled:opacity-50"
                   disabled={creating}
                 >

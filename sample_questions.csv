@@ -1,0 +1,3 @@
+questionText,optionA,optionB,optionC,optionD,correctOption,topic,difficulty,explanation,language,marks,negativeMarks
+"What is the capital of India?","Mumbai","Pune","New Delhi","Nagpur","C","General Knowledge","easy","New Delhi is the capital of India.","en",1,0
+"भारताचे राष्ट्रपती कोण आहेत?","नरेंद्र मोदी","द्रौपदी मुर्मू","अमित शाह","एकनाथ शिंदे","B","General Knowledge","medium","द्रौपदी मुर्मू भारताच्या १५ व्या राष्ट्रपती आहेत.","mr",1,0.25
