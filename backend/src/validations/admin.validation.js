@@ -134,7 +134,7 @@ export const updateExamSchema = {
     durationMinutes: Joi.number().integer().min(1).max(300),
     totalQuestions: Joi.number().integer().min(5).max(200),
     topics: Joi.array()
-      .items(Joi.string().valid(...config.allowedQuestionTopics))
+      .items(Joi.string())
       .unique()
       .min(1),
     maxUsersPerRoom: Joi.number().integer().min(10).max(500),

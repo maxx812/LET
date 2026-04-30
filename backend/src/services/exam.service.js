@@ -158,7 +158,17 @@ function serializeAssignment(registration, exam) {
   };
 }
 
-async function ensureQuestionInventory(match, distribution) {
+
+async function buildExamQuestions(payload) {
+  const { totalQuestions, topics, examTypeId } = payload;
+  
+  const match = {
+    status: "active",
+    examTypeId: new mongoose.Types.ObjectId(payload.examTypeId),
+    topic: { $in: payload.topics }
+  };
+
+  // 1. Get actual availability for each difficulty
   const availabilityRows = await QuestionModel.aggregate([
     { $match: match },
     { $group: { _id: "$difficulty", count: { $sum: 1 } } }
@@ -169,32 +179,53 @@ async function ensureQuestionInventory(match, distribution) {
     availability[row._id] = row.count;
   }
 
-  const shortage = Object.entries(distribution).filter(([difficulty, required]) => availability[difficulty] < required);
+  const totalAvailable = Object.values(availability).reduce((a, b) => a + b, 0);
 
-  if (shortage.length > 0) {
+  if (totalAvailable < totalQuestions) {
     throw new AppError(422, "Not enough active questions to generate this exam", {
       code: "INSUFFICIENT_QUESTION_BANK",
       details: {
-        required: distribution,
-        available: availability
+        required: totalQuestions,
+        available: totalAvailable,
+        byDifficulty: availability,
+        hint: "Add more questions or reduce the total questions count for the exam."
       }
     });
   }
-}
 
-async function buildExamQuestions(payload) {
-  const { totalQuestions, topics, examTypeId } = payload;
-  const difficultyDistribution = calculateDifficultyDistribution(totalQuestions);
-  const match = {
-    status: "active",
-    examTypeId: payload.examTypeId,
-    topic: { $in: payload.topics }
-  };
+  // 2. Calculate ideal distribution
+  const idealDistribution = calculateDifficultyDistribution(totalQuestions);
 
-  await ensureQuestionInventory(match, difficultyDistribution);
+  // 3. Adjust distribution based on actual availability
+  const samplingPlan = { ...idealDistribution };
+  let shortage = 0;
 
+  // First pass: identify shortages
+  for (const difficulty of ["hard", "medium", "easy"]) {
+    if (samplingPlan[difficulty] > availability[difficulty]) {
+      shortage += (samplingPlan[difficulty] - availability[difficulty]);
+      samplingPlan[difficulty] = availability[difficulty];
+    }
+  }
+
+  // Second pass: distribute shortage to other buckets that have surplus
+  if (shortage > 0) {
+    // Fill from medium first, then easy, then hard (preference order)
+    const fillOrder = ["medium", "easy", "hard"];
+    for (const difficulty of fillOrder) {
+      if (shortage <= 0) break;
+      const capacity = availability[difficulty] - samplingPlan[difficulty];
+      if (capacity > 0) {
+        const take = Math.min(capacity, shortage);
+        samplingPlan[difficulty] += take;
+        shortage -= take;
+      }
+    }
+  }
+
+  // 4. Sample questions based on the plan
   const sampledGroups = await Promise.all(
-    Object.entries(difficultyDistribution)
+    Object.entries(samplingPlan)
       .filter(([, count]) => count > 0)
       .map(([difficulty, count]) =>
         QuestionModel.aggregate([
@@ -210,8 +241,9 @@ async function buildExamQuestions(payload) {
   );
 
   const sampledQuestions = shuffle(sampledGroups.flat());
+  
   return {
-    difficultyDistribution,
+    difficultyDistribution: samplingPlan,
     questionIds: sampledQuestions.map((question) => question._id),
     questionSnapshots: sampledQuestions.map(buildQuestionSnapshot)
   };

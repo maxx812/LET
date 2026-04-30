@@ -200,9 +200,10 @@ export const adminService = {
     const limit = filters.limit || 20;
     const skip = (page - 1) * limit;
 
-    const [questions, total] = await Promise.all([
+    const [questions, total, actualTopics] = await Promise.all([
       QuestionModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      QuestionModel.countDocuments(query)
+      QuestionModel.countDocuments(query),
+      QuestionModel.distinct("topic", { status: "active" })
     ]);
 
     return {
@@ -211,7 +212,7 @@ export const adminService = {
       limit,
       total,
       totalPages: Math.ceil(total / limit) || 1,
-      allowedTopics: config.allowedQuestionTopics
+      allowedTopics: actualTopics.length > 0 ? actualTopics : config.allowedQuestionTopics
     };
   },
 
