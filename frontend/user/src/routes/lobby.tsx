@@ -167,139 +167,171 @@ function LobbyPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-focus text-primary-foreground overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-10" />
+    <div className="relative min-h-[calc(100vh-4rem)] bg-zinc-950 text-white overflow-hidden selection:bg-accent/30">
+      {/* Premium Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+      <div className="absolute inset-0 bg-grid opacity-5" />
+      
       <div
         className={cn(
-          "absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full blur-3xl transition-colors",
-          urgent ? "bg-destructive/30" : "bg-accent/20",
+          "absolute -top-[20%] left-1/2 -translate-x-1/2 h-[500px] sm:h-[800px] w-full max-w-[800px] rounded-full blur-[120px] transition-all duration-1000",
+          urgent ? "bg-destructive/20 animate-pulse" : "bg-accent/10",
         )}
       />
 
-      <div className="relative mx-auto max-w-5xl px-4 md:px-6 py-8 md:py-12">
-        <div className="flex items-center justify-between">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-12">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between animate-fade-in">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            className="group inline-flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/40 hover:text-white transition-all"
           >
-            <ArrowLeft className="h-4 w-4" /> Leave session
+            <div className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20">
+              <ArrowLeft size={14} />
+            </div>
+            <span>Leave Session</span>
           </Link>
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs">
-            <Wifi className="h-3.5 w-3.5 text-success" />
-            <span>Connected</span>
-            <span className="opacity-50">·</span>
-            <span className="text-mono">23ms</span>
+          
+          <div className="flex items-center gap-2.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-[10px] sm:text-xs font-bold backdrop-blur-md">
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+            </div>
+            <span className="text-white/80">Sync Active</span>
+            <span className="text-white/20 font-light">|</span>
+            <span className="text-success tabular-nums">24ms</span>
           </div>
         </div>
 
-        <div className="mt-8 md:mt-16 grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 items-center">
-          {/* Big circular timer */}
-          <div className="lg:col-span-3 flex justify-center py-2 md:py-0">
-            <CircularProgress
-              value={progress}
-              size={isMobile ? 220 : 360}
-              stroke={isMobile ? 10 : 18}
-              trackClass="stroke-white/10"
-              barClass={cn("transition-colors", urgent ? "stroke-destructive" : "stroke-accent")}
-              className={cn(urgent && "animate-pulse-ring rounded-full")}
-            >
-              <div className="text-center px-4">
-                <div className="text-[10px] md:text-[11px] uppercase tracking-[0.3em] text-primary-foreground/60">
-                  {isTimeUp ? "Preparation over" : "Session starts in"}
-                </div>
-                <div
-                  key={secondsLeft}
-                  className={cn(
-                    "text-display font-extrabold tabular animate-count-up leading-none",
-                    urgent ? "text-destructive" : (isTimeUp ? "text-success" : "text-primary-foreground"),
-                    secondsLeft >= 100 ? "text-5xl md:text-7xl" : "text-7xl md:text-9xl",
-                  )}
-                >
-                  {isTimeUp ? "READY" : String(Math.max(0, secondsLeft)).padStart(2, "0")}
-                </div>
-                <div className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-primary-foreground/60 mt-1 md:mt-2">
-                  {isTimeUp ? "Waiting for signal..." : "seconds"}
-                </div>
-              </div>
-            </CircularProgress>
-          </div>
-
-          {/* Room info */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary-foreground/60 font-bold">
-                <Shield className="h-3.5 w-3.5" /> Room Info
-              </div>
-              <div className="mt-3 text-display text-xl md:text-2xl font-bold leading-tight text-balance">
-                {exam?.title || "Waiting for Exam..."}
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                <div>
-                  <div className="text-primary-foreground/40 text-[10px] uppercase font-bold tracking-wider">Room ID</div>
-                  <div className="font-bold tabular text-base">{roomId.slice(-8).toUpperCase() || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-primary-foreground/40 text-[10px] uppercase font-bold tracking-wider">Duration</div>
-                  <div className="font-bold text-base">{exam?.durationMinutes || 60} min</div>
-                </div>
-                <div>
-                  <div className="text-primary-foreground/40 text-[10px] uppercase font-bold tracking-wider">Marking</div>
-                  <div className="font-bold text-base">+2 / −0.5</div>
-                </div>
-                <div>
-                  <div className="text-primary-foreground/40 text-[10px] uppercase font-bold tracking-wider">Status</div>
-                  <div className="font-bold text-success capitalize text-base">{exam?.status || "Hold"}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-accent" />
-                  <span className="text-[10px] md:text-sm uppercase tracking-widest text-primary-foreground/60 font-bold">
-                    Candidates joined
-                  </span>
-                </div>
-                <span className="flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-                </span>
-              </div>
-              <div className="mt-4 text-display text-4xl md:text-5xl font-extrabold tabular">
-                <AnimatedNumber value={players} />
-              </div>
-              <div className="mt-4 flex -space-x-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-8 w-8 rounded-full border-2 border-[#1a1a1a] bg-gradient-accent text-[11px] font-bold text-accent-foreground flex items-center justify-center"
-                  >
-                    {String.fromCharCode(65 + i)}
+        <div className="mt-8 sm:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          {/* Main Visual: Circular Timer */}
+          <div className="lg:col-span-7 flex flex-col items-center animate-slide-up">
+            <div className="relative">
+              {/* Decorative rings */}
+              <div className="absolute inset-0 rounded-full border border-white/[0.03] scale-125 pointer-events-none" />
+              <div className="absolute inset-0 rounded-full border border-white/[0.02] scale-150 pointer-events-none" />
+              
+              <CircularProgress
+                value={progress}
+                size={isMobile ? 240 : 420}
+                stroke={isMobile ? 8 : 14}
+                trackClass="stroke-white/5"
+                barClass={cn("transition-all duration-700", urgent ? "stroke-destructive" : "stroke-accent")}
+                className={cn(urgent && "animate-pulse-ring rounded-full shadow-[0_0_50px_-10px_rgba(239,68,68,0.3)]")}
+              >
+                <div className="text-center px-6">
+                  <div className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] text-white/30 mb-2 sm:mb-4">
+                    {isTimeUp ? "Preparation Done" : "Battle Starts In"}
                   </div>
-                ))}
-                <div className="h-8 w-8 rounded-full border-2 border-[#1a1a1a] bg-white/10 text-[10px] font-bold flex items-center justify-center">
-                  +{Math.max(0, players - 6)}
+                  <div
+                    key={secondsLeft}
+                    className={cn(
+                      "text-display font-black tabular-nums leading-none tracking-tighter drop-shadow-2xl",
+                      urgent ? "text-destructive animate-bounce-subtle" : (isTimeUp ? "text-success" : "text-white"),
+                      secondsLeft >= 100 ? "text-5xl sm:text-7xl" : "text-7xl sm:text-[9rem]",
+                    )}
+                  >
+                    {isTimeUp ? "READY" : String(Math.max(0, secondsLeft)).padStart(2, "0")}
+                  </div>
+                  <div className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-white/40 mt-3 sm:mt-6">
+                    {isTimeUp ? "Standby for Launch" : "Seconds Remaining"}
+                  </div>
+                </div>
+              </CircularProgress>
+            </div>
+          </div>
+
+          {/* Side Info Cards */}
+          <div className="lg:col-span-5 space-y-6 sm:space-y-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            {/* Exam Details Card */}
+            <div className="group relative rounded-[2rem] sm:rounded-[2.5rem] bg-white/[0.03] border border-white/[0.05] p-6 sm:p-10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all">
+              <div className="flex items-center gap-3 text-[10px] uppercase font-black tracking-[0.2em] text-accent/80 mb-6">
+                <Trophy size={14} className="fill-accent/20" /> Session Metadata
+              </div>
+              <h3 className="text-display text-2xl sm:text-3xl font-black leading-tight text-white mb-8 line-clamp-2">
+                {exam?.title || "Exam Session"}
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-1.5">
+                  <div className="text-white/30 text-[9px] uppercase font-black tracking-widest">Access Key</div>
+                  <div className="font-bold tabular-nums text-sm sm:text-base text-white/90">{roomId.slice(-8).toUpperCase() || "..."}</div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-white/30 text-[9px] uppercase font-black tracking-widest">Time Limit</div>
+                  <div className="font-bold text-sm sm:text-base text-white/90">{exam?.durationMinutes || 60} Minutes</div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-white/30 text-[9px] uppercase font-black tracking-widest">Marking</div>
+                  <div className="font-bold text-sm sm:text-base text-success tracking-tight">+2.0 Correct</div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-white/30 text-[9px] uppercase font-black tracking-widest">Penalty</div>
+                  <div className="font-bold text-sm sm:text-base text-destructive tracking-tight">-0.5 Negative</div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl bg-gradient-accent text-accent-foreground p-6 flex items-center gap-4 shadow-glow">
-              <ClipboardList className="h-8 w-8 shrink-0" />
+            {/* Participants Card */}
+            <div className="group relative rounded-[2rem] sm:rounded-[2.5rem] bg-white/[0.03] border border-white/[0.05] p-6 sm:p-10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all overflow-hidden">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <Users size={16} className="text-primary" />
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/40">Active Candidates</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-[9px] font-black text-success uppercase">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
+                  </span>
+                  Live
+                </div>
+              </div>
+              
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="text-5xl sm:text-6xl font-black tabular-nums tracking-tighter text-white">
+                    <AnimatedNumber value={players} />
+                  </div>
+                  <p className="text-[10px] sm:text-xs font-medium text-white/30 mt-2">Peers ready in your room</p>
+                </div>
+                
+                <div className="flex -space-x-3 mb-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-4 border-zinc-950 bg-gradient-to-br from-zinc-700 to-zinc-900 shadow-xl" />
+                  ))}
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-4 border-zinc-950 bg-accent/20 flex items-center justify-center text-[8px] sm:text-[10px] font-black text-accent backdrop-blur-sm shadow-xl">
+                    +{Math.max(0, players - 4)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bonus: Pro Tip Card */}
+            <div className="relative rounded-[1.5rem] sm:rounded-[2rem] bg-gradient-to-br from-accent/20 to-primary/20 border border-white/10 p-6 flex items-start gap-4 shadow-glow animate-pulse-ring">
+              <Zap className="h-6 w-6 text-white shrink-0 fill-white/20" />
               <div>
-                <div className="text-display text-lg font-extrabold leading-tight">Certificate of Merit Eligibility</div>
-                <div className="text-xs opacity-80 mt-0.5">Maintain high accuracy to qualify for the excellence badge.</div>
+                <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white mb-1">Merit Bonus Active</h4>
+                <p className="text-[11px] sm:text-[13px] text-white/70 leading-relaxed font-medium">
+                  Maintain high accuracy to earn the <span className="text-white font-bold">Excellence Badge</span> for your profile.
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tips ticker */}
-        <div className="mt-8 mb-4 md:mb-0 rounded-3xl bg-white/5 border border-white/10 p-5 flex items-center gap-4 text-sm backdrop-blur-sm">
-          <Zap className="h-5 w-5 text-accent shrink-0 animate-pulse" />
-          <p className="text-primary-foreground/70 leading-relaxed">
-            <span className="font-bold text-primary-foreground">Pro tip:</span> Use keyboard A/B/C/D to answer instantly. N for next, P for previous, R to mark for review.
-          </p>
+        {/* Footer Shortcut Bar */}
+        <div className="mt-12 sm:mt-24 rounded-[1.5rem] sm:rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-md">
+          <div className="flex items-center gap-4 text-xs font-medium text-white/40 overflow-x-auto w-full sm:w-auto no-scrollbar">
+             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">A/B/C/D</kbd> Select Answer</span>
+             <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
+             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">N</kbd> Next Question</span>
+             <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
+             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">R</kbd> Flag Question</span>
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden sm:block">
+            Keyboard Shortcuts Active
+          </div>
         </div>
       </div>
     </div>

@@ -604,6 +604,7 @@ export const examService = {
       const reg = registrations.find((r) => r.examId.toString() === exam._id.toString());
       if (reg) {
         summary.hasJoined = true;
+        summary.roomId = reg.roomId?.toString();
         summary.hasFinished = ["submitted", "auto_submitted"].includes(reg?.status) || !!reg?.submittedAt;
       }
       return summary;

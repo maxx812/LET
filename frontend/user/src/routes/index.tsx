@@ -39,6 +39,7 @@ function HomePage() {
   const [joinError, setJoinError] = useState("");
   const [stats, setStats] = useState({ activeAspirants: 0, successRate: 94, examTypesCount: 0 });
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [nextExam, setNextExam] = useState<any>(null);
 
   useEffect(() => {
     // Show auth modal on first visit if not logged in
@@ -66,9 +67,14 @@ function HomePage() {
               Date.now() - Number(cached?.updatedAt || 0) < LIVE_EXAMS_CACHE_TTL_MS;
             if (isFresh && Array.isArray(cached?.exams)) {
               setLiveExams(cached.exams);
+              const nextUpcoming = cached.exams.find((e: any) => e.status === "scheduled");
+              const firstLive = cached.exams.find((e: any) => e.status === "live");
+              const priorityExam = nextUpcoming || firstLive || cached.exams[0];
+              
+              setNextExam(priorityExam);
               setTargetTime(
-                cached.exams[0]
-                  ? new Date(cached.exams[0].scheduledStartAt || cached.exams[0].startsAt)
+                priorityExam
+                  ? new Date(priorityExam.scheduledStartAt || priorityExam.startsAt)
                   : null,
               );
               setLoading(false);
@@ -81,13 +87,22 @@ function HomePage() {
         const data = await fetchLiveExams();
         if (data.exams && data.exams.length > 0) {
           setLiveExams(data.exams);
-          setTargetTime(new Date(data.exams[0].scheduledStartAt || data.exams[0].startsAt));
+          
+          // Find the next upcoming (scheduled) exam for the countdown card
+          const nextUpcoming = data.exams.find((e: any) => e.status === "scheduled");
+          const firstLive = data.exams.find((e: any) => e.status === "live");
+          
+          const priorityExam = nextUpcoming || firstLive || data.exams[0];
+          setNextExam(priorityExam);
+          setTargetTime(new Date(priorityExam.scheduledStartAt || priorityExam.startsAt));
+
           sessionStorage.setItem(
             LIVE_EXAMS_CACHE_KEY,
             JSON.stringify({ updatedAt: Date.now(), exams: data.exams }),
           );
         } else {
           setLiveExams([]);
+          setNextExam(null);
           setTargetTime(null);
           sessionStorage.removeItem(LIVE_EXAMS_CACHE_KEY);
         }
@@ -123,11 +138,27 @@ function HomePage() {
 
     setJoining(true);
     try {
-      const eid = liveExams[0].id || liveExams[0]._id;
+      const targetExam = nextExam || liveExams[0];
+      if (!targetExam) {
+        setJoinError("No active exam available right now.");
+        return;
+      }
+      const eid = targetExam.id || targetExam._id;
+      
+      // OPTIMIZATION: If already joined, use the roomId from the exam list
+      if (targetExam.hasJoined && targetExam.roomId) {
+        sessionStorage.setItem("arena_authorized", "true");
+        localStorage.setItem("active_exam_id", eid);
+        localStorage.setItem("active_room_id", targetExam.roomId);
+        navigate({ to: "/lobby" });
+        return;
+      }
+      
       const data = await joinExam({ examId: eid });
       const assignment = data?.assignment || data;
       const roomId = assignment?.roomId || assignment?.room?._id || data?.roomId;
       const examId = assignment?.examId || data?.examId || eid;
+      
       if (!roomId) {
         throw new Error("Room allocation failed. Please retry.");
       }
@@ -136,10 +167,25 @@ function HomePage() {
       localStorage.setItem("active_exam_id", examId);
       localStorage.setItem("active_room_id", roomId);
       navigate({ to: "/lobby" });
-    } catch (requestError) {
+    } catch (requestError: any) {
       const apiError = getApiError(requestError, "Unable to join exam.");
+      
+      // If already joined, the backend might return 409. 
+      // In this case, we should try to find the roomId from the exam list if possible, or just tell them to refresh.
       if (apiError.status === 409) {
-        setJoinError("You have already joined this exam.");
+        // Find if we have this exam in our list and if it has a roomId (some backends include it in 409)
+        const errorData = requestError.response?.data;
+        const existingRoomId = errorData?.roomId || errorData?.assignment?.roomId;
+        
+        if (existingRoomId) {
+          sessionStorage.setItem("arena_authorized", "true");
+          localStorage.setItem("active_exam_id", liveExams[0].id || liveExams[0]._id);
+          localStorage.setItem("active_room_id", existingRoomId);
+          navigate({ to: "/lobby" });
+          return;
+        }
+        
+        setJoinError("You are already in this session. Please refresh the page to sync.");
       } else if (apiError.status === 404) {
         setJoinError("Exam not available. Try another live exam.");
       } else {
@@ -211,7 +257,7 @@ function HomePage() {
                 <div className="absolute inset-0 rounded-2xl sm:rounded-[1.5rem] bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
                 <Swords size={20} className="sm:w-6 sm:h-6" />
                 <span className="text-base sm:text-xl tracking-tight uppercase">
-                  {loading ? "Wait..." : joining ? "Joining..." : isLateToJoin ? "Closed" : liveExams.length === 0 ? "No Live Exam" : "Enter Arena"}
+                  {loading ? "Wait..." : joining ? "Joining..." : isLateToJoin ? "Closed" : liveExams.length === 0 ? "No Live Exam" : nextExam?.hasJoined ? "Resume Session" : "Enter Arena"}
                 </span>
                 {!isLateToJoin && <ArrowRight size={18} className="sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1.5" />}
               </button>
@@ -269,10 +315,10 @@ function HomePage() {
 
                 <div className="mt-4 flex flex-col gap-1.5">
                   <h3 className="text-display text-lg sm:text-xl md:text-2xl font-black text-foreground leading-tight">
-                    {loading ? "Locating next session..." : (liveExams.find(e => e.status === "scheduled")?.title || "No Upcoming Sessions")}
+                    {loading ? "Locating next session..." : (nextExam?.title || "No Upcoming Sessions")}
                   </h3>
                   <div className="flex items-center gap-2.5 text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">
-                    <span>{liveExams[0] ? `${liveExams[0].durationMinutes} min` : "--"} · English</span>
+                    <span>{nextExam ? `${nextExam.durationMinutes} min` : "--"} · English</span>
                     <span className="rounded-lg bg-success/10 px-1.5 py-0.5 text-[9px] font-bold text-success uppercase">Free</span>
                   </div>
                 </div>
