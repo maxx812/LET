@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Users, Wifi, Zap, ArrowLeft, Shield, Trophy } from "lucide-react";
+import { Users, Wifi, Zap, ArrowLeft, Shield, Trophy, ClipboardList } from "lucide-react";
 import { useEffect, useState } from "react";
 
 function useIsMobile() {
