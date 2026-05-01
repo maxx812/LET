@@ -107,11 +107,16 @@
   --input: oklch(0.92 0.015 80);
   --ring: oklch(0.55 0.18 55);
 
-  --chart-1: oklch(0.55 0.2 268);   /* indigo */
-  --chart-2: oklch(0.74 0.18 55);   /* saffron */
-  --chart-3: oklch(0.65 0.17 152);  /* emerald */
-  --chart-4: oklch(0.6 0.24 25);    /* coral */
-  --chart-5: oklch(0.6 0.15 235);   /* sky */
+  --chart-1: oklch(0.55 0.2 268);
+  /* indigo */
+  --chart-2: oklch(0.74 0.18 55);
+  /* saffron */
+  --chart-3: oklch(0.65 0.17 152);
+  /* emerald */
+  --chart-4: oklch(0.6 0.24 25);
+  /* coral */
+  --chart-5: oklch(0.6 0.15 235);
+  /* sky */
 
   --sidebar: oklch(0.98 0.012 85);
   --sidebar-foreground: oklch(0.22 0.05 270);
@@ -124,8 +129,8 @@
 
   /* Bespoke surfaces */
   --gradient-hero: radial-gradient(ellipse at top left, oklch(0.74 0.18 55 / 0.18), transparent 55%),
-                   radial-gradient(ellipse at bottom right, oklch(0.32 0.16 268 / 0.22), transparent 60%),
-                   linear-gradient(180deg, oklch(0.985 0.012 85), oklch(0.97 0.02 75));
+    radial-gradient(ellipse at bottom right, oklch(0.32 0.16 268 / 0.22), transparent 60%),
+    linear-gradient(180deg, oklch(0.985 0.012 85), oklch(0.97 0.02 75));
   --gradient-primary: linear-gradient(135deg, oklch(0.32 0.16 268), oklch(0.42 0.2 280));
   --gradient-accent: linear-gradient(135deg, oklch(0.78 0.18 60), oklch(0.68 0.22 35));
   --gradient-focus: linear-gradient(180deg, oklch(0.16 0.04 270), oklch(0.1 0.03 270));
@@ -184,7 +189,12 @@
     font-feature-settings: "ss01", "cv11";
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
     font-weight: 700;
@@ -201,21 +211,39 @@
   .bg-hero {
     background-image: var(--gradient-hero);
   }
+
   .bg-gradient-primary {
     background-image: var(--gradient-primary);
   }
+
   .bg-gradient-accent {
     background-image: var(--gradient-accent);
   }
+
   .bg-focus {
     background-image: var(--gradient-focus);
   }
-  .shadow-soft { box-shadow: var(--shadow-soft); }
-  .shadow-glow { box-shadow: var(--shadow-glow); }
-  .shadow-pop { box-shadow: var(--shadow-pop); }
 
-  .text-display { font-family: var(--font-display); letter-spacing: -0.025em; }
-  .text-mono { font-family: var(--font-mono); }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-pop {
+    box-shadow: var(--shadow-pop);
+  }
+
+  .text-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+
+  .text-mono {
+    font-family: var(--font-mono);
+  }
 
   /* Fancy grid background */
   .bg-grid {
@@ -237,53 +265,122 @@
 
   /* Animations */
   @keyframes pulse-ring {
-    0% { box-shadow: 0 0 0 0 oklch(0.6 0.24 25 / 0.55); }
-    70% { box-shadow: 0 0 0 18px oklch(0.6 0.24 25 / 0); }
-    100% { box-shadow: 0 0 0 0 oklch(0.6 0.24 25 / 0); }
+    0% {
+      box-shadow: 0 0 0 0 oklch(0.6 0.24 25 / 0.55);
+    }
+
+    70% {
+      box-shadow: 0 0 0 18px oklch(0.6 0.24 25 / 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.6 0.24 25 / 0);
+    }
   }
-  .animate-pulse-ring { animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 
   @keyframes pulse-accent {
-    0%, 100% { box-shadow: 0 0 0 0 oklch(0.74 0.18 55 / 0.55); }
-    50% { box-shadow: 0 0 0 14px oklch(0.74 0.18 55 / 0); }
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.74 0.18 55 / 0.55);
+    }
+
+    50% {
+      box-shadow: 0 0 0 14px oklch(0.74 0.18 55 / 0);
+    }
   }
-  .animate-pulse-accent { animation: pulse-accent 2s ease-in-out infinite; }
+
+  .animate-pulse-accent {
+    animation: pulse-accent 2s ease-in-out infinite;
+  }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-8px);
+    }
   }
-  .animate-float { animation: float 5s ease-in-out infinite; }
+
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
 
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
   }
+
   .skeleton {
     background: linear-gradient(90deg,
-      var(--muted) 0%,
-      color-mix(in oklab, var(--muted) 60%, white) 50%,
-      var(--muted) 100%);
+        var(--muted) 0%,
+        color-mix(in oklab, var(--muted) 60%, white) 50%,
+        var(--muted) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.6s linear infinite;
   }
 
   @keyframes count-up {
-    from { transform: translateY(8px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
-  .animate-count-up { animation: count-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+  .animate-count-up {
+    animation: count-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 
   @keyframes rank-jump {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.06); background-color: color-mix(in oklab, var(--accent) 25%, transparent); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+
+    40% {
+      transform: scale(1.06);
+      background-color: color-mix(in oklab, var(--accent) 25%, transparent);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
-  .animate-rank-jump { animation: rank-jump 0.7s ease-out; }
+
+  .animate-rank-jump {
+    animation: rank-jump 0.7s ease-out;
+  }
 
   @keyframes slide-up {
-    from { transform: translateY(16px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
-  .animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 }

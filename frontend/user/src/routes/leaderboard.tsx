@@ -30,9 +30,9 @@ function LeaderboardPage() {
   }, []);
 
   const targetType = examTypes.find(t => t._id === userProfile?.targetExamTypeId);
-  
+
   // Filter by user's exam field (targetExamTypeId)
-  const fieldRows = userProfile?.targetExamTypeId 
+  const fieldRows = userProfile?.targetExamTypeId
     ? rows.filter(r => r.examTypeId === userProfile.targetExamTypeId)
     : rows;
 
@@ -166,7 +166,7 @@ function LeaderboardPage() {
         </div>
         <ul>
           {filtered.map((r) => (
-             <LeaderboardRow key={r.id} r={r} />
+            <LeaderboardRow key={r.id} r={r} />
           ))}
         </ul>
       </div>

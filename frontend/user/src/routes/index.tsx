@@ -221,8 +221,8 @@ function HomePage() {
               <span>India's #1 Live Arena</span>
             </div>
 
-            <h1 className="text-display text-[2.5rem] sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black leading-[1.1] sm:leading-[1.05] tracking-tighter">
-              Outperform.<br className="hidden sm:block" />
+            <h1 className="text-display text-[2.2rem] sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black leading-[1.1] sm:leading-[1.05] tracking-tighter">
+              Outperform.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-primary to-accent bg-[length:200%_auto] animate-pulse-ring">
                 Outrank.
               </span>
@@ -243,36 +243,36 @@ function HomePage() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 w-full sm:w-auto px-4 sm:px-0">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto px-4 sm:px-0">
               <button
                 onClick={handleJoinBattle}
                 disabled={Boolean(isLateToJoin) || joining || loading || liveExams.length === 0}
                 className={cn(
-                  "group relative flex h-[54px] sm:h-[70px] items-center justify-center gap-2 sm:gap-3 rounded-xl sm:rounded-[1.5rem] px-6 sm:px-12 font-black shadow-pop transition-all active:scale-[0.98] w-full sm:w-auto",
+                  "group relative flex h-[64px] sm:h-[70px] items-center justify-center gap-3 rounded-2xl sm:rounded-[1.5rem] px-8 sm:px-12 font-black shadow-pop transition-all active:scale-[0.98] w-full sm:w-auto",
                   isLateToJoin || loading || liveExams.length === 0
                     ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-70"
                     : "bg-gradient-accent text-accent-foreground hover:-translate-y-1 hover:shadow-[0_15px_40px_-10px_var(--accent)]"
                 )}
               >
-                <div className="absolute inset-0 rounded-xl sm:rounded-[1.5rem] bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
-                <Swords size={18} className="sm:w-6 sm:h-6" />
-                <span className="text-sm sm:text-xl tracking-tight uppercase">
+                <div className="absolute inset-0 rounded-2xl sm:rounded-[1.5rem] bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
+                <Swords size={20} className="sm:w-6 sm:h-6" />
+                <span className="text-base sm:text-xl tracking-tight uppercase">
                   {loading ? "Wait..." : joining ? "Joining..." : isLateToJoin ? "Closed" : liveExams.length === 0 ? "No Live Exam" : nextExam?.hasJoined ? "Resume Session" : "Enter Arena"}
                 </span>
-                {!isLateToJoin && <ArrowRight size={16} className="sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1.5" />}
+                {!isLateToJoin && <ArrowRight size={18} className="sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1.5" />}
               </button>
 
               <Link
                 to="/leaderboard"
-                className="flex h-[54px] sm:h-[70px] items-center justify-center gap-2 sm:gap-3 rounded-xl sm:rounded-[1.5rem] border-2 border-border/80 bg-background/50 px-6 sm:px-12 font-bold text-foreground backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98] w-full sm:w-auto"
+                className="flex h-[64px] sm:h-[70px] items-center justify-center gap-3 rounded-2xl sm:rounded-[1.5rem] border-2 border-border/80 bg-background/50 px-8 sm:px-12 font-bold text-foreground backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98] w-full sm:w-auto"
               >
                 <Trophy size={18} className="sm:w-5 sm:h-5 text-primary" />
-                <span className="text-sm sm:text-xl tracking-tight uppercase">Rankings</span>
+                <span className="text-base sm:text-xl tracking-tight uppercase">Rankings</span>
               </Link>
             </div>
 
             {/* Micro stats */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-8 border-t border-border/50 w-full">
+            <div className="grid grid-cols-3 gap-2 sm:gap-6 pt-8 border-t border-border/50">
               {[
                 { icon: Users, label: "Aspirants", val: `${(stats.activeAspirants + 5000).toLocaleString()}+` },
                 {
@@ -286,12 +286,12 @@ function HomePage() {
                   val: `${stats.examTypesCount}+`,
                 },
               ].map((s, i) => (
-                <div key={i} className="flex flex-col items-center lg:items-start bg-white/5 sm:bg-transparent rounded-2xl p-3 sm:p-0 border border-white/5 sm:border-transparent">
-                  <div className="flex items-center gap-1.5 text-muted-foreground/80 sm:text-muted-foreground/60 mb-1.5">
-                    <s.icon size={14} className="sm:w-4 sm:h-4" />
-                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em]">{s.label}</span>
+                <div key={i} className="flex flex-col items-center lg:items-start">
+                  <div className="flex items-center gap-1.5 text-muted-foreground/60 mb-1.5">
+                    <s.icon size={12} className="sm:w-4 sm:h-4" />
+                    <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em]">{s.label}</span>
                   </div>
-                  <div className="text-base sm:text-2xl font-display font-black tracking-tight text-foreground">{s.val}</div>
+                  <div className="text-[13px] sm:text-2xl font-display font-black tracking-tight text-foreground">{s.val}</div>
                 </div>
               ))}
             </div>
@@ -324,18 +324,18 @@ function HomePage() {
                 </div>
               </div>
 
-              <div className="px-5 md:px-8 pb-6 md:pb-8 grid grid-cols-4 gap-2 sm:gap-4">
+              <div className="px-6 md:px-8 pb-6 md:pb-8 grid grid-cols-4 gap-2">
                 {[
                   { v: cd.days, l: "Days" },
                   { v: cd.hours, l: "Hrs" },
                   { v: cd.minutes, l: "Min" },
                   { v: cd.seconds, l: "Sec" },
                 ].map((u, i) => (
-                  <div key={i} className="flex flex-col items-center justify-center rounded-xl md:rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 py-4 md:py-5 relative overflow-hidden shadow-inner group">
-                    <span className="text-xl md:text-3xl font-display font-black tracking-tight tabular-nums text-foreground group-hover:scale-110 transition-transform">
+                  <div key={i} className="flex flex-col items-center justify-center rounded-xl md:rounded-2xl bg-background border border-border/50 py-3 md:py-4 relative overflow-hidden group">
+                    <span className="text-base md:text-2xl font-display font-bold tracking-tight tabular-nums">
                       {String(Math.max(0, u.v)).padStart(2, "0")}
                     </span>
-                    <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-widest">{u.l}</span>
+                    <span className="text-[8px] md:text-[10px] font-medium text-muted-foreground uppercase mt-0.5">{u.l}</span>
                   </div>
                 ))}
               </div>
@@ -347,8 +347,8 @@ function HomePage() {
                   </span>
                 </div>
 
-                <div className="space-y-1.5 min-h-[60px]">
-                  {topPlayers.length > 0 ? topPlayers.slice(0, 3).map((p, idx) => (
+                <div className="space-y-1.5">
+                  {topPlayers.slice(0, 3).map((p, idx) => (
                     <div key={p.id || idx} className="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-white/5 transition-all">
                       <div className="flex items-center gap-3">
                         <div className={cn(
@@ -357,15 +357,11 @@ function HomePage() {
                         )}>
                           #{idx + 1}
                         </div>
-                        <span className="font-bold text-xs tracking-wide text-white/90 truncate max-w-[120px] sm:max-w-[150px]">{p.username}</span>
+                        <span className="font-bold text-xs tracking-wide text-white/90 truncate max-w-[100px]">{p.username}</span>
                       </div>
                       <div className="font-mono font-bold text-xs text-white/70">{p.score.toLocaleString()} xp</div>
                     </div>
-                  )) : (
-                    <div className="flex flex-col items-center justify-center py-4 text-center">
-                      <span className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-widest">No Toppers Yet</span>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
@@ -464,8 +460,8 @@ function HomePage() {
                       </div>
 
                       {/* Slider Container */}
-                      <div className="relative group/slider -mx-4 sm:mx-0">
-                        <div className="flex gap-4 md:gap-8 overflow-x-auto pb-12 px-4 sm:px-2 no-scrollbar scroll-smooth snap-x snap-mandatory items-stretch">
+                      <div className="relative group/slider">
+                        <div className="flex gap-4 md:gap-8 overflow-x-auto pb-12 px-4 md:px-2 no-scrollbar scroll-smooth snap-x snap-mandatory">
                           {displayExams.map((exam) => {
                             const status = String(exam.status || "").toLowerCase();
                             const startAt = new Date(exam.scheduledStartAt || exam.startsAt);
@@ -485,8 +481,8 @@ function HomePage() {
                               <div
                                 key={exam.id || exam._id}
                                 className={cn(
-                                  "snap-center shrink-0 w-[85vw] sm:w-[400px] group relative rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 glass p-6 sm:p-8 flex flex-col transition-all duration-700 hover:bg-card hover:shadow-pop hover:border-accent/40",
-                                  isLive && "ring-2 ring-destructive/30 bg-destructive/[0.03]"
+                                  "snap-start shrink-0 w-[82vw] sm:w-[400px] group relative rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 bg-card/20 p-6 sm:p-8 flex flex-col transition-all duration-700 hover:bg-card hover:shadow-pop hover:border-accent/20",
+                                  isLive && "ring-2 ring-destructive/20 bg-destructive/[0.02]"
                                 )}
                               >
                                 {/* Status Header */}
@@ -557,7 +553,7 @@ function HomePage() {
                                   ) : (
                                     <Link
                                       to="/result"
-                                      className="w-full h-14 sm:h-16 rounded-xl sm:rounded-[1.5rem] flex items-center justify-center gap-2 sm:gap-3 font-black text-[10px] sm:text-sm uppercase tracking-[0.15em] bg-white/10 text-white hover:bg-white/20 border border-white/10 transition-all shadow-sm"
+                                      className="w-full h-14 sm:h-16 rounded-xl sm:rounded-[1.5rem] flex items-center justify-center gap-2 sm:gap-3 font-black text-[10px] sm:text-sm uppercase tracking-[0.15em] bg-white/5 text-foreground hover:bg-white/10 border border-white/5 transition-all"
                                     >
                                       <Award size={16} className="sm:w-[18px] sm:h-[18px] text-accent" />
                                       <span>View Score</span>
@@ -586,10 +582,8 @@ function HomePage() {
         </div>
 
         {/* Categories/Marquee equivalent */}
-        <div className="mt-20 md:mt-32 border-y border-border/50 bg-background py-8 sm:py-12 -mx-4 px-4 overflow-hidden shadow-inner group relative">
-          <div className="absolute inset-y-0 left-0 w-8 sm:w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-8 sm:w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-          <div className="flex items-center justify-center gap-6 sm:gap-16 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700 flex-wrap font-display font-black text-sm sm:text-2xl tracking-widest uppercase text-center relative z-0">
+        <div className="mt-20 md:mt-32 border-y border-border/50 bg-background py-8 sm:py-12 -mx-4 px-4 overflow-hidden shadow-inner">
+          <div className="flex items-center justify-center gap-6 sm:gap-16 opacity-30 grayscale flex-wrap font-display font-black text-base sm:text-2xl tracking-widest uppercase text-center">
             <span>SSC CGL</span>
             <span className="hidden sm:block text-accent/50 w-2 h-2 rounded-full" />
             <span>RRB NTPC</span>
@@ -622,8 +616,8 @@ function HomePage() {
 
         {/* Registration CTA Section */}
         {!getStoredUser() && (
-          <div className="mt-24 md:mt-32 mb-12 sm:mb-24 animate-slide-up px-2 sm:px-0" style={{ animationDelay: "0.2s" }}>
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-zinc-950/80 backdrop-blur-2xl p-8 sm:p-20 text-center border border-white/10 shadow-pop">
+          <div className="mt-24 md:mt-32 mb-12 sm:mb-24 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-zinc-950 p-8 sm:p-20 text-center border border-white/5 shadow-pop mx-1 sm:mx-0">
               {/* Background effects */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5" />
               <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 blur-[100px] pointer-events-none" />
@@ -634,11 +628,11 @@ function HomePage() {
                   <Zap size={14} className="fill-current animate-pulse" />
                   Join 12K+ Active Aspirants
                 </div>
-                <h2 className="text-display text-3xl sm:text-5xl font-black text-white leading-[1.2] sm:leading-[1.1] tracking-tight uppercase">
-                  Ready to prove your <br className="hidden sm:block" />
+                <h2 className="text-display text-2xl sm:text-5xl font-black text-white leading-[1.2] sm:leading-[1.1] tracking-tight uppercase">
+                  Ready to prove your <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-white to-primary">Academic Excellence?</span>
                 </h2>
-                <p className="mt-6 text-sm sm:text-base text-zinc-400 font-medium leading-relaxed px-4">
+                <p className="mt-6 text-xs sm:text-base text-zinc-400 font-medium leading-relaxed px-4">
                   Sign up now to access real-time proctored exams, climb the global leaderboards,
                   and earn your verified certificate of merit.
                 </p>
@@ -656,7 +650,7 @@ function HomePage() {
                     </svg>
                     Continue with Google
                   </button>
-                  <Link to="/leaderboard" className="text-zinc-400 hover:text-white text-sm sm:text-base font-bold transition-colors py-2 flex items-center gap-2">
+                  <Link to="/leaderboard" className="text-zinc-500 hover:text-white text-xs sm:text-base font-bold transition-colors py-2 flex items-center gap-2">
                     Browse Rankings First <ChevronRight size={16} />
                   </Link>
                 </div>

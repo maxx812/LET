@@ -171,7 +171,7 @@ function LobbyPage() {
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
       <div className="absolute inset-0 bg-grid opacity-5" />
-      
+
       <div
         className={cn(
           "absolute -top-[20%] left-1/2 -translate-x-1/2 h-[500px] sm:h-[800px] w-full max-w-[800px] rounded-full blur-[120px] transition-all duration-1000",
@@ -191,7 +191,7 @@ function LobbyPage() {
             </div>
             <span>Leave Session</span>
           </Link>
-          
+
           <div className="flex items-center gap-2.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-[10px] sm:text-xs font-bold backdrop-blur-md">
             <div className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
@@ -210,7 +210,7 @@ function LobbyPage() {
               {/* Decorative rings */}
               <div className="absolute inset-0 rounded-full border border-white/[0.03] scale-125 pointer-events-none" />
               <div className="absolute inset-0 rounded-full border border-white/[0.02] scale-150 pointer-events-none" />
-              
+
               <CircularProgress
                 value={progress}
                 size={isMobile ? 240 : 420}
@@ -251,7 +251,7 @@ function LobbyPage() {
               <h3 className="text-display text-2xl sm:text-3xl font-black leading-tight text-white mb-8 line-clamp-2">
                 {exam?.title || "Exam Session"}
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-1.5">
                   <div className="text-white/30 text-[9px] uppercase font-black tracking-widest">Access Key</div>
@@ -287,7 +287,7 @@ function LobbyPage() {
                   Live
                 </div>
               </div>
-              
+
               <div className="flex items-end justify-between">
                 <div>
                   <div className="text-5xl sm:text-6xl font-black tabular-nums tracking-tighter text-white">
@@ -295,7 +295,7 @@ function LobbyPage() {
                   </div>
                   <p className="text-[10px] sm:text-xs font-medium text-white/30 mt-2">Peers ready in your room</p>
                 </div>
-                
+
                 <div className="flex -space-x-3 mb-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-4 border-zinc-950 bg-gradient-to-br from-zinc-700 to-zinc-900 shadow-xl" />
@@ -323,11 +323,11 @@ function LobbyPage() {
         {/* Footer Shortcut Bar */}
         <div className="mt-12 sm:mt-24 rounded-[1.5rem] sm:rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-md">
           <div className="flex items-center gap-4 text-xs font-medium text-white/40 overflow-x-auto w-full sm:w-auto no-scrollbar">
-             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">A/B/C/D</kbd> Select Answer</span>
-             <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
-             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">N</kbd> Next Question</span>
-             <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
-             <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">R</kbd> Flag Question</span>
+            <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">A/B/C/D</kbd> Select Answer</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
+            <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">N</kbd> Next Question</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/5 hidden sm:block" />
+            <span className="flex items-center gap-2 whitespace-nowrap"><kbd className="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">R</kbd> Flag Question</span>
           </div>
           <div className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden sm:block">
             Keyboard Shortcuts Active
