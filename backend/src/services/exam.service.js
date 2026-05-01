@@ -139,7 +139,12 @@ function serializeExamSummary(exam) {
     startedAt: exam.startedAt,
     completedAt: exam.completedAt,
     resultsGeneratedAt: exam.resultsGeneratedAt || null,
-    examTypeId: exam.examTypeId,
+    examTypeId: exam.examTypeId?._id || exam.examTypeId,
+    examType: (exam.examTypeId && typeof exam.examTypeId === "object" && exam.examTypeId.name) ? {
+      id: exam.examTypeId._id.toString(),
+      name: exam.examTypeId.name,
+      slug: exam.examTypeId.slug
+    } : null,
     createdAt: exam.createdAt,
     updatedAt: exam.updatedAt
   };
@@ -586,6 +591,7 @@ export const examService = {
       status: { $in: ["scheduled", "live", "completed"] },
       scheduledEndAt: { $gt: new Date(now.getTime() - 48 * 60 * 60 * 1000) }
     })
+      .populate("examTypeId", "name slug")
       .sort({ scheduledStartAt: 1 })
       .lean();
 

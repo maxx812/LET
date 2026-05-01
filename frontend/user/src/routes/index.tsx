@@ -339,106 +339,137 @@ function HomePage() {
                 </div>
               ))}
             </div>
+          ) : liveExams.length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-border rounded-[2.5rem] bg-card/20">
+              <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground font-medium">No exams available at the moment.</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveExams.map((exam) => {
-                const status = String(exam.status || "").toLowerCase();
-                const startAt = new Date(exam.scheduledStartAt || exam.startsAt);
-                const isLive = status === "live";
-                const isUpcoming = status === "scheduled";
-                const isCompleted = status === "completed" || exam.hasFinished;
+            <div className="space-y-16">
+              {Object.entries(
+                liveExams.reduce((acc: any, exam) => {
+                  const category = exam.examType?.name || "General Assessment";
+                  if (!acc[category]) acc[category] = [];
+                  acc[category].push(exam);
+                  return acc;
+                }, {})
+              ).map(([category, exams]: [string, any]) => {
+                const liveAndUpcoming = exams.filter((e: any) => e.status !== "completed" && !e.hasFinished);
+                const completed = exams.filter((e: any) => e.status === "completed" || e.hasFinished).slice(0, 3);
+                const displayExams = [...liveAndUpcoming, ...completed];
 
-                const statusConfig = {
-                  live: { label: "LIVE", color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/20", icon: <Flame size={12} className="animate-pulse" /> },
-                  scheduled: { label: "UPCOMING", color: "text-info", bg: "bg-info/10", border: "border-info/20", icon: <Calendar size={12} /> },
-                  completed: { label: "COMPLETED", color: "text-muted-foreground", bg: "bg-muted/10", border: "border-border", icon: <CheckCircle size={12} /> }
-                };
-
-                const config = statusConfig[isLive ? "live" : isUpcoming ? "scheduled" : "completed"];
+                if (displayExams.length === 0) return null;
 
                 return (
-                  <div
-                    key={exam.id || exam._id}
-                    className={cn(
-                      "group relative rounded-[2.5rem] border border-border bg-card/40 p-6 flex flex-col transition-all duration-500 hover:-translate-y-1.5 hover:shadow-pop hover:bg-card",
-                      isLive && "ring-1 ring-destructive/20"
-                    )}
-                  >
-                    {/* Status Badge */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", config.bg, config.color, config.border)}>
-                        {config.icon} {config.label}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                        <Users size={14} />
-                        <span className="text-xs font-bold tabular-nums">{exam.participantCount || 0}</span>
-                      </div>
+                  <div key={category} className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="h-8 w-1.5 rounded-full bg-accent shadow-glow" />
+                      <h3 className="text-xl md:text-2xl font-black tracking-tight uppercase">{category}</h3>
+                      <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
                     </div>
 
-                    <h3 className="font-display font-black text-xl leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
-                      {exam.title || "Untitled Examination"}
-                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {displayExams.map((exam) => {
+                        const status = String(exam.status || "").toLowerCase();
+                        const startAt = new Date(exam.scheduledStartAt || exam.startsAt);
+                        const isLive = status === "live";
+                        const isUpcoming = status === "scheduled";
+                        const isCompleted = status === "completed" || exam.hasFinished;
 
-                    <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
-                          <Clock size={14} className="text-muted-foreground" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] uppercase font-bold text-muted-foreground/50 leading-none mb-0.5">Start Time</div>
-                          <div className="font-semibold text-foreground/80">{Number.isNaN(startAt.getTime()) ? "--" : startAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
-                        </div>
-                      </div>
+                        const statusConfig = {
+                          live: { label: "LIVE", color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/20", icon: <Flame size={12} className="animate-pulse" /> },
+                          scheduled: { label: "UPCOMING", color: "text-info", bg: "bg-info/10", border: "border-info/20", icon: <Calendar size={12} /> },
+                          completed: { label: "COMPLETED", color: "text-muted-foreground", bg: "bg-muted/10", border: "border-border", icon: <CheckCircle size={12} /> }
+                        };
 
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
-                          <CheckCircle size={14} className="text-muted-foreground" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] uppercase font-bold text-muted-foreground/50 leading-none mb-0.5">Assessment</div>
-                          <div className="font-semibold text-foreground/80">{exam.totalQuestions || 0} Questions · {exam.durationMinutes || 0}m</div>
-                        </div>
-                      </div>
+                        const config = statusConfig[isLive ? "live" : isUpcoming ? "scheduled" : "completed"];
+
+                        return (
+                          <div
+                            key={exam.id || exam._id}
+                            className={cn(
+                              "group relative rounded-[2.5rem] border border-border bg-card/40 p-6 flex flex-col transition-all duration-500 hover:-translate-y-1.5 hover:shadow-pop hover:bg-card",
+                              isLive && "ring-1 ring-destructive/20"
+                            )}
+                          >
+                            {/* Status Badge */}
+                            <div className="flex items-center justify-between mb-6">
+                              <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", config.bg, config.color, config.border)}>
+                                {config.icon} {config.label}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                                <Users size={14} />
+                                <span className="text-xs font-bold tabular-nums">{exam.participantCount || 0}</span>
+                              </div>
+                            </div>
+
+                            <h3 className="font-display font-black text-xl leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
+                              {exam.title || "Untitled Examination"}
+                            </h3>
+
+                            <div className="mt-6 space-y-3">
+                              <div className="flex items-center gap-3 text-sm">
+                                <div className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
+                                  <Clock size={14} className="text-muted-foreground" />
+                                </div>
+                                <div>
+                                  <div className="text-[10px] uppercase font-bold text-muted-foreground/50 leading-none mb-0.5">Start Time</div>
+                                  <div className="font-semibold text-foreground/80">{Number.isNaN(startAt.getTime()) ? "--" : startAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 text-sm">
+                                <div className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
+                                  <CheckCircle size={14} className="text-muted-foreground" />
+                                </div>
+                                <div>
+                                  <div className="text-[10px] uppercase font-bold text-muted-foreground/50 leading-none mb-0.5">Assessment</div>
+                                  <div className="font-semibold text-foreground/80">{exam.totalQuestions || 0} Questions · {exam.durationMinutes || 0}m</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-auto pt-8">
+                              {!isCompleted ? (
+                                <button
+                                  type="button"
+                                  disabled={isUpcoming || joining}
+                                  onClick={isLive ? handleJoinBattle : undefined}
+                                  className={cn(
+                                    "w-full h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm transition-all relative overflow-hidden active:scale-[0.98]",
+                                    isLive
+                                      ? "bg-gradient-primary text-primary-foreground shadow-glow hover:shadow-pop"
+                                      : "bg-secondary text-muted-foreground cursor-default"
+                                  )}
+                                >
+                                  {isLive ? (
+                                    <>
+                                      <Zap size={16} fill="currentColor" />
+                                      <span>Participate Now</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Clock size={16} />
+                                      <span>Coming Soon</span>
+                                    </>
+                                  )}
+                                </button>
+                              ) : (
+                                <Link
+                                  to="/result"
+                                  className="w-full h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm bg-secondary text-foreground hover:bg-muted transition-all"
+                                >
+                                  <Award size={16} />
+                                  <span>View Result</span>
+                                </Link>
+                              )}
+                            </div>
+
+                            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full pointer-events-none group-hover:bg-primary/10 transition-all" />
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    <div className="mt-auto pt-8">
-                      {!isCompleted ? (
-                        <button
-                          type="button"
-                          disabled={isUpcoming || joining}
-                          onClick={isLive ? handleJoinBattle : undefined}
-                          className={cn(
-                            "w-full h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm transition-all relative overflow-hidden active:scale-[0.98]",
-                            isLive
-                              ? "bg-gradient-primary text-primary-foreground shadow-glow hover:shadow-pop"
-                              : "bg-secondary text-muted-foreground cursor-default"
-                          )}
-                        >
-                          {isLive ? (
-                            <>
-                              <Zap size={16} fill="currentColor" />
-                              <span>Participate Now</span>
-                            </>
-                          ) : (
-                            <>
-                              <Clock size={16} />
-                              <span>Coming Soon</span>
-                            </>
-                          )}
-                        </button>
-                      ) : (
-                        <Link
-                          to="/result"
-                          className="w-full h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm bg-secondary text-foreground hover:bg-muted transition-all"
-                        >
-                          <Award size={16} />
-                          <span>View Result</span>
-                        </Link>
-                      )}
-                    </div>
-
-                    {/* Subtle decorative elements */}
-                    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full pointer-events-none group-hover:bg-primary/10 transition-all" />
                   </div>
                 );
               })}
