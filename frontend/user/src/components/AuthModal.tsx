@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, X, Loader2, User, Phone, MapPin, GraduationCap, ChevronRight, Check } from "lucide-react";
-import { loginWithGoogle } from "@/lib/authService";
+import { loginWithGoogle, persistSession } from "@/lib/authService";
 import { getApiError, fetchExamTypes, updateProfile } from "@/services/api";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,7 @@ export function AuthModal({
   const [user, setUser] = useState<any>(null);
 
   const [formData, setFormData] = useState({
+    name: "",
     phone: "",
     district: "",
     gender: "",
@@ -52,8 +53,28 @@ export function AuthModal({
     try {
       const userData = await loginWithGoogle();
       if (!userData) return;
+      
       setUser(userData);
-      setStep(2); // Move to Step 2
+      setFormData(prev => ({ 
+        ...prev, 
+        name: userData.name || "",
+        phone: userData.phone || "",
+        district: userData.district || "",
+        gender: userData.gender || "",
+        targetExamTypeId: userData.targetExamTypeId || "",
+        category: userData.category || "",
+        education: userData.education || ""
+      }));
+
+      // Check if profile is already complete
+      const isComplete = userData.phone && userData.district && userData.gender && 
+                         userData.targetExamTypeId && userData.category && userData.education;
+
+      if (isComplete) {
+        onSuccess(userData);
+      } else {
+        setStep(2); // Move to Step 2 for registration
+      }
     } catch (error) {
       const apiError = getApiError(error, "Google login failed. Please try again.");
       setError(apiError.message);
@@ -63,8 +84,8 @@ export function AuthModal({
   }
 
   async function handleFinalizeRegistration() {
-    const { phone, district, gender, targetExamTypeId, category, education } = formData;
-    if (!phone || !district || !gender || !targetExamTypeId || !category || !education) {
+    const { name, phone, district, gender, targetExamTypeId, category, education } = formData;
+    if (!name || !phone || !district || !gender || !targetExamTypeId || !category || !education) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -77,8 +98,18 @@ export function AuthModal({
     setLoading(true);
     setError("");
     try {
-      await updateProfile(formData);
-      onSuccess(user);
+      const response = await updateProfile(formData);
+      // Update local storage with the complete profile data
+      const updatedProfile = response?.profile || response;
+      if (updatedProfile) {
+        const token = localStorage.getItem("user_token");
+        if (token) {
+          persistSession(updatedProfile, token);
+        }
+        onSuccess(updatedProfile);
+      } else {
+        onSuccess(user);
+      }
     } catch (error) {
       const apiError = getApiError(error, "Failed to save profile. Please try again.");
       setError(apiError.message);
@@ -94,20 +125,21 @@ export function AuthModal({
         "rounded-[1.5rem] md:rounded-[2.5rem]",
         step === 1 ? "max-w-sm animate-slide-up" : "max-w-2xl animate-scale-in"
       )}>
-        
+
         <button onClick={onClose} className="absolute right-6 top-6 p-2 rounded-full hover:bg-secondary text-muted-foreground transition-all">
           <X size={20} />
         </button>
 
         {step === 1 ? (
           <div className="space-y-6 pt-4">
-            <div className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
-                <User size={32} className="text-primary" />
+            <div className="text-center px-2">
+              <div className="mx-auto w-24 h-24 rounded-[2.5rem] bg-gradient-primary flex items-center justify-center mb-10 shadow-pop relative group">
+                <div className="absolute inset-0 bg-white/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <User size={48} className="text-primary-foreground relative" />
               </div>
-              <h2 className="text-3xl font-black font-display tracking-tight text-foreground">Welcome to Battleground</h2>
-              <p className="text-muted-foreground mt-2 font-medium">
-                Your journey to the top of the leaderboard starts here.
+              <h2 className="text-[2.5rem] md:text-4xl font-black font-display tracking-tight text-foreground leading-[1.1]">Join the Elite Aspirants</h2>
+              <p className="text-sm md:text-base text-muted-foreground mt-4 font-bold opacity-80 leading-relaxed">
+                Access real-time proctored exams and compete for the top merit list.
               </p>
             </div>
 
@@ -145,29 +177,42 @@ export function AuthModal({
           </div>
         ) : (
           <div className="space-y-8 animate-fade-in">
-            <div className="flex items-center gap-4 md:gap-6 pb-6 border-b border-border">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
-                <Check size={20} className="text-success md:hidden" />
-                <Check size={28} className="text-success hidden md:block" />
+            <div className="flex items-center gap-5 md:gap-6 pb-6 border-b border-border">
+              <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                <Check size={28} className="text-success" />
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-black font-display tracking-tight leading-tight">One Last Step, {user?.name.split(' ')[0]}!</h2>
-                <p className="text-xs md:text-sm text-muted-foreground font-medium mt-1">Complete your student profile for personalized exams.</p>
+                <h2 className="text-2xl md:text-2xl font-black font-display tracking-tight leading-tight">One Last Step, {user?.name.split(' ')[0]}!</h2>
+                <p className="text-[13px] md:text-sm text-muted-foreground font-bold mt-1 opacity-70">Complete your student profile for personalized exams.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {/* Name */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
+                  <User size={12} className="text-primary" /> Full Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+
               {/* Phone */}
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
                   <Phone size={12} className="text-primary" /> Mobile Number
                 </label>
-                <input 
-                  type="tel" 
-                  placeholder="10-digit mobile" 
+                <input
+                  type="tel"
+                  placeholder="10-digit mobile"
                   className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                   value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
 
@@ -178,7 +223,7 @@ export function AuthModal({
                   {["Male", "Female", "Other"].map(g => (
                     <button
                       key={g}
-                      onClick={() => setFormData({...formData, gender: g})}
+                      onClick={() => setFormData({ ...formData, gender: g })}
                       className={cn(
                         "flex-1 h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border text-xs md:text-sm font-bold transition-all",
                         formData.gender === g ? "bg-primary text-primary-foreground border-primary shadow-soft" : "bg-background border-border hover:border-primary/50"
@@ -195,10 +240,10 @@ export function AuthModal({
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
                   <MapPin size={12} className="text-primary" /> District
                 </label>
-                <select 
+                <select
                   className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.district}
-                  onChange={e => setFormData({...formData, district: e.target.value})}
+                  onChange={e => setFormData({ ...formData, district: e.target.value })}
                 >
                   <option value="">Select District</option>
                   {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -210,10 +255,10 @@ export function AuthModal({
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
                   <GraduationCap size={12} className="text-primary" /> Target Exam
                 </label>
-                <select 
+                <select
                   className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.targetExamTypeId}
-                  onChange={e => setFormData({...formData, targetExamTypeId: e.target.value})}
+                  onChange={e => setFormData({ ...formData, targetExamTypeId: e.target.value })}
                 >
                   <option value="">Select Exam</option>
                   {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
@@ -223,10 +268,10 @@ export function AuthModal({
               {/* Category */}
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Reservation Category</label>
-                <select 
+                <select
                   className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.category}
-                  onChange={e => setFormData({...formData, category: e.target.value})}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
                 >
                   <option value="">Select Category</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -235,16 +280,18 @@ export function AuthModal({
 
               {/* Education */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Education</label>
-                <select 
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
+                   <GraduationCap size={12} className="text-primary" /> Qualification
+                </label>
+                <select
                   className="w-full h-[50px] md:h-[54px] rounded-xl md:rounded-2xl border border-border bg-background px-4 md:px-5 text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                   value={formData.education}
-                  onChange={e => setFormData({...formData, education: e.target.value})}
+                  onChange={e => setFormData({ ...formData, education: e.target.value })}
                 >
-                  <option value="">Select Highest Education</option>
-                  <option value="10th Pass">10th Pass</option>
-                  <option value="12th Pass">12th Pass</option>
-                  <option value="Graduate">Graduate</option>
+                  <option value="">Highest Education</option>
+                  <option value="10th Pass">10th Pass (SSC)</option>
+                  <option value="12th Pass">12th Pass (HSC)</option>
+                  <option value="Graduate">Degree / Graduate</option>
                   <option value="Post Graduate">Post Graduate</option>
                 </select>
               </div>

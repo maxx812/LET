@@ -71,6 +71,12 @@ const examSchema = new mongoose.Schema(
       trim: true,
       maxlength: 160
     },
+    battleCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true
+    },
     examTypeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ExamType",

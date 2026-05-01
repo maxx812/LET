@@ -2,6 +2,11 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { fetchUsers, toggleUserStatus } from "../services/apiClient";
 import { Users, Eye, Ban, TrendingUp, RefreshCw, Database, Shield, UserCheck, Search, Filter, Mail, Calendar, MoreHorizontal, Download } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
+import { Modal } from "../components/ui/Modal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -37,7 +42,7 @@ export default function UsersPage() {
     const user = users.find(u => u._id === id);
     const action = user?.isActive === false ? "activate" : "suspend";
     const msg = action === "suspend" ? "Suspend this user? They will be logged out." : "Reactivate this user?";
-    if(!window.confirm(msg)) return;
+    if (!window.confirm(msg)) return;
     try {
       await toggleUserStatus(id, action);
       setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: action === "activate" } : u));
@@ -54,9 +59,9 @@ export default function UsersPage() {
           <button onClick={onClose} className="absolute right-6 top-6 p-2 rounded-full hover:bg-secondary text-muted-foreground transition-all">
             <RefreshCw size={20} />
           </button>
-          
+
           <div className="flex flex-col items-center mb-8">
-             <div className={cn(
+            <div className={cn(
               "w-20 h-20 rounded-3xl text-2xl font-black flex items-center justify-center mb-4 ring-4",
               user.role === "admin" ? "bg-gradient-accent text-accent-foreground ring-accent/20" : "bg-primary/10 text-primary ring-primary/10"
             )}>
@@ -67,19 +72,19 @@ export default function UsersPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-             {[
-               { label: "Mobile", value: user.phone || "—", icon: Mail },
-               { label: "District", value: user.district || "—", icon: Filter },
-               { label: "Category", value: user.category || "—", icon: TrendingUp },
-               { label: "Gender", value: user.gender || "—", icon: Users },
-               { label: "Education", value: user.education || "—", icon: Database },
-               { label: "Status", value: user.isActive ? "Active" : "Suspended", icon: Shield },
-             ].map(f => (
-               <div key={f.label} className="bg-secondary/30 p-3 rounded-2xl border border-border/40">
-                 <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">{f.label}</div>
-                 <div className="text-sm font-bold text-foreground truncate">{f.value}</div>
-               </div>
-             ))}
+            {[
+              { label: "Mobile", value: user.phone || "—", icon: Mail },
+              { label: "District", value: user.district || "—", icon: Filter },
+              { label: "Category", value: user.category || "—", icon: TrendingUp },
+              { label: "Gender", value: user.gender || "—", icon: Users },
+              { label: "Education", value: user.education || "—", icon: Database },
+              { label: "Status", value: user.isActive ? "Active" : "Suspended", icon: Shield },
+            ].map(f => (
+              <div key={f.label} className="bg-secondary/30 p-3 rounded-2xl border border-border/40">
+                <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">{f.label}</div>
+                <div className="text-sm font-bold text-foreground truncate">{f.value}</div>
+              </div>
+            ))}
           </div>
 
           <button onClick={onClose} className="w-full mt-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition-all">
@@ -98,9 +103,9 @@ export default function UsersPage() {
           <p className="admin-page-subtitle">View user activity, rank history and manage accounts</p>
         </div>
         <div className="admin-action-row">
-          <button 
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto" 
-            onClick={loadUsers} 
+          <button
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto"
+            onClick={loadUsers}
             disabled={loading}
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh
@@ -121,7 +126,7 @@ export default function UsersPage() {
         ].map(s => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="admin-card p-4 flex items-center gap-3 hover:shadow-soft transition-all">
+            <Card key={s.label} className="p-4 flex items-center gap-3 hover:shadow-soft transition-all">
               <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", s.color)}>
                 <Icon size={18} />
               </div>
@@ -129,13 +134,13 @@ export default function UsersPage() {
                 <div className="font-display text-xl font-extrabold tabular-nums">{s.value}</div>
                 <div className="text-[0.625rem] uppercase tracking-widest font-bold text-muted-foreground">{s.label}</div>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
       {/* User Table */}
-      <div className="admin-card flex flex-col">
+      <Card className="flex flex-col overflow-hidden">
         <div className="admin-section-header flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-secondary/30">
           <div className="font-display font-bold flex items-center gap-2.5 text-foreground">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -145,24 +150,23 @@ export default function UsersPage() {
             <span className="text-muted-foreground text-sm font-medium ml-1">({filteredUsers.length})</span>
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            <div className="flex items-center bg-background border border-border/60 rounded-xl px-3 py-2 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all flex-1 sm:flex-initial sm:max-w-[220px]">
-              <Search size={14} className="text-muted-foreground mr-2 shrink-0" />
-              <input 
+            <div className="flex-1 sm:flex-initial sm:min-w-[200px]">
+              <Input 
                 value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..." 
-                className="bg-transparent border-none outline-none text-sm w-full text-foreground font-medium"
+                leftIcon={<Search size={14} />}
               />
             </div>
-            <select 
-              value={roleFilter} 
-              onChange={(e) => setRoleFilter(e.target.value)} 
-              className="px-3.5 py-2 rounded-xl border border-border/60 bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none cursor-pointer min-w-[110px]"
+            <Select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="min-w-[120px]"
             >
               <option value="">All Roles</option>
               <option value="student">Student</option>
               <option value="admin">Admin</option>
               <option value="suspended">Suspended</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -182,8 +186,8 @@ export default function UsersPage() {
                   <div className={cn(
                     "w-11 h-11 rounded-2xl text-xs font-extrabold flex items-center justify-center shrink-0 ring-2 transition-all",
                     u.role === "admin" ? "bg-gradient-accent text-accent-foreground ring-accent/25" :
-                    u.isActive === false ? "bg-destructive/15 text-destructive ring-destructive/15" :
-                    "bg-primary/12 text-primary ring-primary/15"
+                      u.isActive === false ? "bg-destructive/15 text-destructive ring-destructive/15" :
+                        "bg-primary/12 text-primary ring-primary/15"
                   )}>
                     {u.name?.split(" ").map((w) => w[0]).join("").toUpperCase() || "?"}
                   </div>
@@ -195,8 +199,8 @@ export default function UsersPage() {
                       <span className={cn(
                         "inline-flex items-center gap-1 text-[0.5625rem] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider border shrink-0",
                         u.role === "admin" ? "bg-accent/12 text-accent-foreground border-accent/20" :
-                        u.isActive === false ? "bg-destructive/12 text-destructive border-destructive/20" :
-                        "bg-primary/8 text-primary border-primary/15"
+                          u.isActive === false ? "bg-destructive/12 text-destructive border-destructive/20" :
+                            "bg-primary/8 text-primary border-primary/15"
                       )}>
                         {u.role === "admin" ? <Shield size={9} /> : u.isActive === false ? <Ban size={9} /> : <UserCheck size={9} />}
                         {u.isActive === false ? "Suspended" : u.role}
@@ -214,14 +218,14 @@ export default function UsersPage() {
 
                   {/* Actions */}
                   <div className="flex gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                    <button 
+                    <button
                       onClick={() => setSelectedUser(u)}
-                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all" 
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       title="View Profile"
                     >
                       <Eye size={15} />
                     </button>
-                    <button 
+                    <button
                       className={cn(
                         "p-2 rounded-xl transition-all disabled:opacity-30",
                         u.isActive === false ? "text-success/50 hover:text-success hover:bg-success/10" : "text-destructive/50 hover:text-destructive hover:bg-destructive/10"
@@ -247,11 +251,11 @@ export default function UsersPage() {
             </span>
           </div>
         )}
-      </div>
+      </Card>
 
-      <UserDetailsModal 
-        user={selectedUser} 
-        onClose={() => setSelectedUser(null)} 
+      <UserDetailsModal
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
       />
     </div>
   );

@@ -121,18 +121,18 @@ export default function CategoriesPage() {
                 Exam Types
               </div>
             </div>
-            
+
             <div className="p-5">
               <form onSubmit={handleCreateType} className="flex gap-2 mb-6">
-                <input 
+                <input
                   className="flex-1 px-4 py-2 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
                   placeholder="e.g. MPSC 2026"
                   value={newTypeName}
                   onChange={e => setNewTypeName(e.target.value)}
                   required
                 />
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={creatingType}
                   className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft hover:-translate-y-0.5 transition-all disabled:opacity-50"
                 >
@@ -147,8 +147,8 @@ export default function CategoriesPage() {
                     onClick={() => setSelectedType(type)}
                     className={cn(
                       "flex items-center justify-between p-4 rounded-2xl border transition-all group",
-                      selectedType?._id === type._id 
-                        ? "bg-primary/10 border-primary text-primary shadow-soft" 
+                      selectedType?._id === type._id
+                        ? "bg-primary/10 border-primary text-primary shadow-soft"
                         : "bg-card border-border hover:bg-secondary/50"
                     )}
                   >
@@ -200,15 +200,15 @@ export default function CategoriesPage() {
               ) : (
                 <>
                   <form onSubmit={handleCreateSubject} className="flex gap-2 mb-8">
-                    <input 
+                    <input
                       className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
                       placeholder={`New subject name for ${selectedType.name}`}
                       value={newSubjectName}
                       onChange={e => setNewSubjectName(e.target.value)}
                       required
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={creatingSubject}
                       className="px-6 py-2.5 rounded-xl bg-accent text-accent-foreground font-bold text-sm shadow-soft hover:-translate-y-0.5 transition-all disabled:opacity-50"
                     >

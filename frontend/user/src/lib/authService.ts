@@ -15,6 +15,12 @@ export type SessionUser = {
   uid: string;
   name: string;
   email: string;
+  phone?: string;
+  district?: string;
+  gender?: string;
+  category?: string;
+  education?: string;
+  targetExamTypeId?: string;
 };
 
 const USER_KEY = "user_data";
@@ -27,6 +33,12 @@ function sanitizeSessionUser(user: Partial<SessionUser> | null | undefined): Ses
     uid: user.uid,
     email: user.email,
     name: user.name || user.email.split("@")[0] || "User",
+    phone: user.phone,
+    district: user.district,
+    gender: user.gender,
+    category: user.category,
+    education: user.education,
+    targetExamTypeId: user.targetExamTypeId,
   };
 }
 
@@ -134,7 +146,7 @@ async function requestServerSession(firebaseUser: FirebaseUser, forceRefresh = f
   });
 
   const sessionUser = sanitizeSessionUser({
-    id: data?.user?.id,
+    ...data?.user,
     uid: data?.user?.uid || firebaseUser.uid,
     email: data?.user?.email || firebaseUser.email || "",
     name: data?.user?.name || firebaseUser.displayName || "",

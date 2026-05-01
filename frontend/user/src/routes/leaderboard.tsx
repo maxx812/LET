@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 import { Trophy, TrendingUp, TrendingDown, Minus, Crown, Search, Filter } from "lucide-react";
 import { useLeaderboard } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
+import { fetchMyProfile, fetchExamTypes } from "@/services/api";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
       { title: "Live Leaderboard — ExamStrike" },
-      { name: "description", content: "Real-time rankings of India's top exam aspirants. Live score updates every second." },
+      { name: "description", content: "Real-time rankings of India's top exam aspirants. Live performance updates." },
       { property: "og:title", content: "Live Leaderboard — ExamStrike" },
-      { property: "og:description", content: "Watch the rankings shuffle in real-time. Climb to the top." },
+      { property: "og:description", content: "Watch the rankings shuffle in real-time based on session performance." },
     ],
   }),
   component: LeaderboardPage,
@@ -18,12 +19,26 @@ export const Route = createFileRoute("/leaderboard")({
 
 function LeaderboardPage() {
   const rows = useLeaderboard();
-  const [tab, setTab] = useState<"room" | "global">("room");
+  const [tab, setTab] = useState<"room" | "global">("global");
   const [query, setQuery] = useState("");
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [examTypes, setExamTypes] = useState<any[]>([]);
 
-  const filtered = rows.filter((r) => r.username.toLowerCase().includes(query.toLowerCase()));
-  const top3 = rows.slice(0, 3);
-  const you = rows.find((r) => r.isYou);
+  useEffect(() => {
+    fetchMyProfile().then(setUserProfile).catch(console.error);
+    fetchExamTypes().then(data => setExamTypes(data.examTypes || [])).catch(console.error);
+  }, []);
+
+  const targetType = examTypes.find(t => t._id === userProfile?.targetExamTypeId);
+  
+  // Filter by user's exam field (targetExamTypeId)
+  const fieldRows = userProfile?.targetExamTypeId 
+    ? rows.filter(r => r.examTypeId === userProfile.targetExamTypeId)
+    : rows;
+
+  const filtered = fieldRows.filter((r) => r.username.toLowerCase().includes(query.toLowerCase()));
+  const top3 = fieldRows.slice(0, 3);
+  const you = fieldRows.find((r) => r.isYou);
 
   return (
     <div className="mx-auto max-w-6xl px-4 md:px-6 py-8 md:py-12">
@@ -33,7 +48,9 @@ function LeaderboardPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> LIVE · updates every 2.5s
           </div>
           <h1 className="mt-3 text-display text-3xl md:text-4xl font-extrabold">Leaderboard</h1>
-          <p className="text-muted-foreground mt-1">Real-time rankings · SSC CGL Tier 1 · Today's battle</p>
+          <p className="text-muted-foreground mt-1">
+            {targetType ? `${targetType.name} Aspirants` : "Real-time rankings"} · Today's Session
+          </p>
         </div>
 
         <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1">
@@ -99,7 +116,7 @@ function LeaderboardPage() {
                 {you.username.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest opacity-70">Your position</div>
+                <div className="text-xs uppercase tracking-widest opacity-70">Your Merit Position</div>
                 <div className="text-display text-2xl font-extrabold">#{you.rank} · {you.username}</div>
               </div>
             </div>
@@ -114,7 +131,7 @@ function LeaderboardPage() {
               </div>
               <div>
                 <div className="text-xs opacity-70">To #1</div>
-                <div className="text-display text-2xl font-bold tabular text-accent">{Math.max(0, rows[0].score - you.score)}</div>
+                <div className="text-display text-2xl font-bold tabular text-accent">{Math.max(0, (fieldRows[0]?.score || 0) - you.score)}</div>
               </div>
             </div>
           </div>
@@ -140,12 +157,12 @@ function LeaderboardPage() {
       {/* Table */}
       <div className="mt-4 rounded-2xl border border-border bg-card overflow-hidden">
         <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 border-b border-border text-[11px] uppercase tracking-widest text-muted-foreground font-semibold bg-secondary/40">
-          <div className="col-span-1">Rank</div>
-          <div className="col-span-4">Aspirant</div>
+          <div className="col-span-1">Pos</div>
+          <div className="col-span-3">Candidate</div>
+          <div className="col-span-2 text-right">Room</div>
           <div className="col-span-2 text-right">Score</div>
-          <div className="col-span-2 text-right">Accuracy</div>
           <div className="col-span-2 text-right">Time</div>
-          <div className="col-span-1 text-right">Δ</div>
+          <div className="col-span-2 text-right">Updated At</div>
         </div>
         <ul>
           {filtered.map((r) => (
@@ -184,7 +201,7 @@ const LeaderboardRow = memo(({ r }: { r: any }) => {
           {r.rank}
         </span>
       </div>
-      <div className="md:col-span-4 flex items-center gap-3 min-w-0">
+      <div className="md:col-span-3 flex items-center gap-3 min-w-0">
         <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
           {r.username.slice(0, 2).toUpperCase()}
         </div>
@@ -193,13 +210,16 @@ const LeaderboardRow = memo(({ r }: { r: any }) => {
             {r.username}
             {r.isYou && <span className="text-[10px] font-bold uppercase rounded bg-accent text-accent-foreground px-1.5 py-0.5">You</span>}
           </div>
-          <div className="text-xs text-muted-foreground md:hidden">{r.score} XP · {r.accuracy.toFixed(0)}%</div>
+          <div className="text-xs text-muted-foreground md:hidden">{r.score} XP · {r.roomCode}</div>
         </div>
       </div>
+      <div className="hidden md:block md:col-span-2 text-right font-mono text-xs text-accent bg-accent/5 py-1 px-2 rounded-lg">{r.roomCode || "GLOBAL"}</div>
       <div className="hidden md:block md:col-span-2 text-right text-display text-lg font-bold tabular">{r.score}</div>
-      <div className="hidden md:block md:col-span-2 text-right tabular">{r.accuracy.toFixed(1)}%</div>
       <div className="hidden md:block md:col-span-2 text-right text-mono text-sm text-muted-foreground tabular">
         {Math.floor(r.timeSec / 60)}m {r.timeSec % 60}s
+      </div>
+      <div className="hidden md:block md:col-span-2 text-right text-xs text-muted-foreground tabular">
+        {r.updatedAt ? new Date(r.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-"}
       </div>
       <div className="md:col-span-1 flex md:justify-end">
         {delta > 0 ? (

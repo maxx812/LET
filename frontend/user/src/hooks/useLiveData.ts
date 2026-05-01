@@ -95,6 +95,9 @@ export type LeaderboardEntry = {
   timeSec: number;
   isYou?: boolean;
   avatar?: string;
+  examTypeId?: string;
+  roomCode?: string;
+  updatedAt?: string;
 };
 
 export function useExamLeaderboard(examId = "") {
@@ -131,6 +134,9 @@ export function useExamLeaderboard(examId = "") {
           accuracy: e.accuracy ?? 0,
           timeSec: e.timeTakenSeconds ?? e.timeSec ?? 0,
           isYou: id === storedUserId,
+          examTypeId: e.examTypeId,
+          roomCode: e.roomCode,
+          updatedAt: e.updatedAt,
         };
       });
 

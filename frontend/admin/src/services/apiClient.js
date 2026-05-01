@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000,
 });
 
@@ -15,7 +15,19 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error?.config;
+    const shouldRetry =
+      originalRequest &&
+      !originalRequest._retried &&
+      (!error.response || error.response.status >= 500);
+
+    if (shouldRetry) {
+      originalRequest._retried = true;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return apiClient(originalRequest);
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem("admin_token");
       localStorage.removeItem("admin_user");

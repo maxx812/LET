@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { config } from "../config/env.js";
 import { examEngineService } from "./exam-engine.service.js";
 import { examService } from "./exam.service.js";
@@ -10,11 +11,25 @@ function examChannel(examId) {
   return `exam:${examId}`;
 }
 
+function buildCountdownPayload(exam) {
+  const nowMs = Date.now();
+  const targetTimeMs = new Date(
+    exam.status === "scheduled" ? exam.scheduledStartAt : exam.scheduledEndAt
+  ).getTime();
+  return {
+    examId: exam.id,
+    status: exam.status,
+    serverNow: new Date(nowMs),
+    remainingMs: Math.max(0, targetTimeMs - nowMs)
+  };
+}
+
 export function startExamScheduler(io) {
   if (scheduleIntervalHandle || flushIntervalHandle || leaderboardIntervalHandle) return;
 
   const scheduleTick = async () => {
     try {
+      if (mongoose.connection.readyState !== 1) return;
       const { startedExams, completedExams } = await examService.runScheduleTick();
 
       for (const exam of startedExams) {
@@ -46,6 +61,11 @@ export function startExamScheduler(io) {
         const rooms = await examService.getRoomMonitoringSnapshot();
         io.to("admins").emit("admin:rooms:update", rooms);
       }
+
+      const examClock = await examService.getRealtimeExamClock();
+      for (const exam of examClock) {
+        io.to(examChannel(exam.id)).emit("exam:countdown", buildCountdownPayload(exam));
+      }
     } catch (error) {
       console.error("Exam scheduler tick failed", error);
     }
@@ -53,6 +73,7 @@ export function startExamScheduler(io) {
 
   const flushTick = async () => {
     try {
+      if (mongoose.connection.readyState !== 1) return;
       await examEngineService.flushDirtyAttempts();
     } catch (error) {
       console.error("Attempt flush tick failed", error);

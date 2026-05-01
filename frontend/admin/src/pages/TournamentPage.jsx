@@ -52,10 +52,10 @@ export default function TournamentPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
-        
+
         {/* Left config */}
         <div className="flex flex-col gap-6">
-          
+
           <div className="admin-card">
             <div className="p-5 border-b border-border bg-primary/5">
               <div className="font-display font-bold flex items-center gap-2.5 text-foreground">

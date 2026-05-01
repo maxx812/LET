@@ -7,6 +7,7 @@ import { AppError } from "../shared/errors/app-error.js";
 import { connectRedis } from "../shared/redis/redis.client.js";
 import { redisKeys } from "./exam-engine.redis.js";
 import { examService } from "./exam.service.js";
+import { ExamRoomModel } from "../models/exam-room.model.js";
 
 const EXAM_CACHE_TTL_MS = 15_000;
 const SCORE_PRECISION_FACTOR = 1_000;
@@ -197,7 +198,10 @@ function serializeLeaderboardEntry(meta, rank) {
     accuracy: meta.accuracy,
     answeredCount: meta.answeredCount,
     timeTakenSeconds: meta.timeTakenSeconds,
-    status: meta.status
+    status: meta.status,
+    examTypeId: meta.examTypeId,
+    roomCode: meta.roomCode,
+    updatedAt: meta.updatedAt || new Date().toISOString()
   };
 }
 
@@ -311,6 +315,14 @@ function normalizeSubmitPayload(payloadOrTrigger) {
     trigger: payloadOrTrigger?.trigger || "manual",
     answers: Array.isArray(payloadOrTrigger?.answers) ? payloadOrTrigger.answers : []
   };
+}
+
+function chunkArray(items, chunkSize) {
+  const chunks = [];
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize));
+  }
+  return chunks;
 }
 
 async function loadExamRuntime(examId, { refresh = false, allowCompleted = true } = {}) {
@@ -482,6 +494,14 @@ async function updateLeaderboard(exam, attempt, metrics, statusOverride = null) 
   const examId = toIdString(exam._id);
   const userId = toIdString(attempt.userId);
   const ttlSeconds = calculateTtlSeconds(exam);
+  let roomCode = "GLOBAL";
+  try {
+    const room = await ExamRoomModel.findById(attempt.roomId).select("roomCode").lean();
+    if (room) roomCode = room.roomCode;
+  } catch (err) {
+    // Fallback to GLOBAL if error
+  }
+
   const metaPayload = {
     userId,
     name: attempt.userName,
@@ -489,7 +509,10 @@ async function updateLeaderboard(exam, attempt, metrics, statusOverride = null) 
     accuracy: metrics.accuracy,
     answeredCount: metrics.answeredCount,
     timeTakenSeconds: metrics.timeTakenSeconds,
-    status: statusOverride || attempt.status
+    status: statusOverride || attempt.status,
+    examTypeId: toIdString(exam.examTypeId),
+    roomCode,
+    updatedAt: new Date().toISOString()
   };
 
   await redis
@@ -1003,11 +1026,21 @@ export const examEngineService = {
   async broadcastDirtyLeaderboards(io) {
     const redis = await connectRedis();
     const examIds = await redis.smembers(redisKeys.leaderboardDirtyIndex());
+    if (examIds.length === 0) return;
 
-    for (const examId of examIds) {
-      const snapshot = await buildLeaderboardSnapshot(examId);
-      io.to(`exam:${examId}`).emit("leaderboard:update", snapshot);
-      await redis.srem(redisKeys.leaderboardDirtyIndex(), examId);
+    for (const examIdChunk of chunkArray(examIds, 10)) {
+      const snapshots = await Promise.all(
+        examIdChunk.map(async (examId) => ({
+          examId,
+          snapshot: await buildLeaderboardSnapshot(examId)
+        }))
+      );
+
+      for (const { examId, snapshot } of snapshots) {
+        io.to(`exam:${examId}`).emit("leaderboard:update", snapshot);
+      }
+
+      await redis.srem(redisKeys.leaderboardDirtyIndex(), ...examIdChunk);
     }
   },
 

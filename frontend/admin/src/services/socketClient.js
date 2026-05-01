@@ -19,7 +19,8 @@ function getSocketOptions() {
 
 export function connectAdminSocket() {
   if (!socket) {
-    const url = import.meta.env.VITE_SOCKET_URL;
+    const configuredApiBaseUrl = import.meta.env.VITE_API_URL;
+    const url = import.meta.env.VITE_SOCKET_URL || configuredApiBaseUrl;
     const socketOptions = getSocketOptions();
     socket = url ? io(url, socketOptions) : io(socketOptions);
   }

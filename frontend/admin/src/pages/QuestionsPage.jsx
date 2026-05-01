@@ -176,7 +176,7 @@ export default function QuestionsPage() {
       try {
         const data = await fetchSubjects(modalSelections.examTypeId);
         setModalSubjects(data.subjects || []);
-      } catch {}
+      } catch { }
     }
     if (showUploadModal && uploadReport?.type === "configure") {
       loadModalSubjects();
@@ -252,24 +252,24 @@ export default function QuestionsPage() {
               <div className="flex items-center gap-4">
                 <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
-                  uploadReport.type === "instruction" || uploadReport.type === "configure" ? "bg-warning/15 text-warning" : 
-                  uploadReport.type === "error" ? "bg-destructive/15 text-destructive" :
-                  "bg-primary/15 text-primary"
+                  uploadReport.type === "instruction" || uploadReport.type === "configure" ? "bg-warning/15 text-warning" :
+                    uploadReport.type === "error" ? "bg-destructive/15 text-destructive" :
+                      "bg-primary/15 text-primary"
                 )}>
                   {uploadReport.type === "error" ? <X size={24} /> : uploadReport.type === "configure" || uploadReport.type === "instruction" ? <AlertCircle size={24} /> : <Upload size={24} />}
                 </div>
                 <div>
                   <h2 className="font-bold text-xl tracking-tight text-foreground">
-                    {uploadReport.type === "configure" ? uploadReport.title : 
-                     uploadReport.type === "error" ? uploadReport.title :
-                     uploadReport.type === "instruction" ? uploadReport.title : "Bulk Upload Results"}
+                    {uploadReport.type === "configure" ? uploadReport.title :
+                      uploadReport.type === "error" ? uploadReport.title :
+                        uploadReport.type === "instruction" ? uploadReport.title : "Bulk Upload Results"}
                   </h2>
                   <p className="text-xs text-muted-foreground mt-1">
                     {uploadReport.type === "configure" || uploadReport.type === "error" ? "System action required" : uploadReport.fileName}
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowUploadModal(false)}
                 className="w-8 h-8 rounded-full hover:bg-secondary flex items-center justify-center text-muted-foreground transition-all"
               >
@@ -290,57 +290,57 @@ export default function QuestionsPage() {
                     </div>
                   </div>
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-[0.7rem] font-bold text-muted-foreground uppercase tracking-widest mb-2 ml-1">Target Exam Type *</label>
-                        <select 
-                          className="w-full h-11 px-4 rounded-xl border border-input bg-card text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none shadow-sm"
-                          value={modalSelections.examTypeId}
-                          onChange={e => setModalSelections(prev => ({ ...prev, examTypeId: e.target.value, subjectId: "" }))}
-                        >
-                          <option value="">Select Exam</option>
-                          {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[0.7rem] font-bold text-muted-foreground uppercase tracking-widest mb-2 ml-1">Target Subject *</label>
-                        <select 
-                          className="w-full h-11 px-4 rounded-xl border border-input bg-card text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none shadow-sm"
-                          value={modalSelections.subjectId}
-                          onChange={e => setModalSelections(prev => ({ ...prev, subjectId: e.target.value }))}
-                          disabled={!modalSelections.examTypeId}
-                        >
-                          <option value="">Select Subject</option>
-                          {modalSubjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="bg-secondary/30 rounded-xl p-4 border border-border/60">
-                      <p className="text-[0.7rem] text-muted-foreground font-medium leading-relaxed italic uppercase tracking-wider">
-                        Note: Questions will be categorized under the selected Exam and Subject.
-                      </p>
-                    </div>
-                    
-                    <div className="pt-2">
-                      <button 
-                        onClick={() => performUpload(pendingFile, modalSelections.examTypeId, modalSelections.subjectId)}
-                        disabled={!modalSelections.examTypeId || !modalSelections.subjectId || uploading}
-                        className="group w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:shadow-soft active:scale-[0.99] transition-all"
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[0.7rem] font-bold text-muted-foreground uppercase tracking-widest mb-2 ml-1">Target Exam Type *</label>
+                      <select
+                        className="w-full h-11 px-4 rounded-xl border border-input bg-card text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none shadow-sm"
+                        value={modalSelections.examTypeId}
+                        onChange={e => setModalSelections(prev => ({ ...prev, examTypeId: e.target.value, subjectId: "" }))}
                       >
-                        {uploading ? (
-                          <>
-                            <RefreshCw size={18} className="animate-spin" /> Processing Upload...
-                          </>
-                        ) : (
-                          <>
-                            Confirm & Start Import <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
-                          </>
-                        )}
-                      </button>
+                        <option value="">Select Exam</option>
+                        {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[0.7rem] font-bold text-muted-foreground uppercase tracking-widest mb-2 ml-1">Target Subject *</label>
+                      <select
+                        className="w-full h-11 px-4 rounded-xl border border-input bg-card text-sm font-bold outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none shadow-sm"
+                        value={modalSelections.subjectId}
+                        onChange={e => setModalSelections(prev => ({ ...prev, subjectId: e.target.value }))}
+                        disabled={!modalSelections.examTypeId}
+                      >
+                        <option value="">Select Subject</option>
+                        {modalSubjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                      </select>
                     </div>
                   </div>
+
+                  <div className="bg-secondary/30 rounded-xl p-4 border border-border/60">
+                    <p className="text-[0.7rem] text-muted-foreground font-medium leading-relaxed italic uppercase tracking-wider">
+                      Note: Questions will be categorized under the selected Exam and Subject.
+                    </p>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => performUpload(pendingFile, modalSelections.examTypeId, modalSelections.subjectId)}
+                      disabled={!modalSelections.examTypeId || !modalSelections.subjectId || uploading}
+                      className="group w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:shadow-soft active:scale-[0.99] transition-all"
+                    >
+                      {uploading ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" /> Processing Upload...
+                        </>
+                      ) : (
+                        <>
+                          Confirm & Start Import <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               ) : uploadReport.type === "error" ? (
                 <div className="space-y-6">
                   <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-4">
@@ -401,14 +401,14 @@ export default function QuestionsPage() {
                     <ul className="space-y-2.5">
                       {uploadReport.tips.map((tip, i) => (
                         <li key={i} className="flex gap-3 text-sm font-medium">
-                          <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i+1}</span>
+                          <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                           {tip}
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div className="pt-2">
-                    <button 
+                    <button
                       onClick={() => setShowUploadModal(false)}
                       className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft hover:shadow-pop transition-all"
                     >
@@ -479,7 +479,7 @@ export default function QuestionsPage() {
                         <BookOpen size={14} className="text-primary" />
                         CSV Structure Guide
                       </h3>
-                      <button 
+                      <button
                         onClick={handleDownloadTemplate}
                         className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg"
                       >
@@ -509,14 +509,14 @@ export default function QuestionsPage() {
             </div>
 
             <div className="p-6 border-t border-border bg-secondary/15 flex gap-3">
-              <button 
+              <button
                 onClick={() => setShowUploadModal(false)}
                 className="flex-1 h-11 rounded-xl border border-border bg-card font-bold text-sm hover:bg-secondary transition-all"
               >
                 Close Window
               </button>
               {(uploadReport.type === "result" || uploadReport.type === "error") && (
-                <button 
+                <button
                   onClick={() => {
                     setShowUploadModal(false);
                     csvInputRef.current?.click();
@@ -563,10 +563,10 @@ export default function QuestionsPage() {
             Bulk Upload
           </button>
           <input type="file" ref={csvInputRef} className="hidden" accept=".csv,.json" onChange={handleCsvUpload} />
-          
-          <button 
-             onClick={() => setShowForm(!showForm)}
-             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft hover:shadow-pop transition-all"
+
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft hover:shadow-pop transition-all"
           >
             {showForm ? <X size={16} /> : <Plus size={16} />}
             {showForm ? "Close Form" : "Add Question"}

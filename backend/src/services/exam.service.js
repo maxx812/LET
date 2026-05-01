@@ -5,6 +5,8 @@ import { ExamRoomModel } from "../models/exam-room.model.js";
 import { ExamModel } from "../models/exam.model.js";
 import { QuestionModel } from "../models/question.model.js";
 import { AppError } from "../shared/errors/app-error.js";
+import { connectRedis } from "../shared/redis/redis.client.js";
+import { redisKeys } from "./exam-engine.redis.js";
 
 const DISTRIBUTION_RATIOS = [
   { key: "easy", ratio: 0.3, priority: 2 },
@@ -120,6 +122,7 @@ function sanitizeQuestionForCandidate(questionSnapshot) {
 function serializeExamSummary(exam) {
   return {
     id: exam._id.toString(),
+    battleCode: exam.battleCode,
     title: exam.title,
     description: exam.description,
     instructions: exam.instructions,
@@ -140,6 +143,15 @@ function serializeExamSummary(exam) {
     createdAt: exam.createdAt,
     updatedAt: exam.updatedAt
   };
+}
+
+function generateBattleCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i += 1) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `EXM-${code}`;
 }
 
 function serializeAssignment(registration, exam) {
@@ -303,7 +315,7 @@ async function allocateRoom(exam, session = null) {
           {
             examId: exam._id,
             roomNumber: updatedExam.roomSequence,
-            roomCode: `ROOM-${String(updatedExam.roomSequence).padStart(3, "0")}`,
+            roomCode: `${exam.battleCode || "ROOM"}-R${String(updatedExam.roomSequence).padStart(2, "0")}`,
             capacity: exam.maxUsersPerRoom,
             occupancy: 1,
             status: exam.maxUsersPerRoom === 1 ? "full" : "open",
@@ -359,6 +371,7 @@ export const examService = {
         topics: payload.topics
       },
       examTypeId: payload.examTypeId,
+      battleCode: generateBattleCode(),
       difficultyDistribution,
       questionIds,
       questionSnapshots,
@@ -513,6 +526,35 @@ export const examService = {
     return startedExams;
   },
 
+  async forceStopExams(examId = null) {
+    const now = new Date();
+    const query = examId ? { _id: examId, status: "live" } : { status: "live" };
+    const examsToStop = await ExamModel.find(query).select("_id");
+    const stoppedExams = [];
+
+    for (const exam of examsToStop) {
+      const updatedExam = await ExamModel.findOneAndUpdate(
+        {
+          _id: exam._id,
+          status: "live"
+        },
+        {
+          $set: {
+            status: "completed",
+            completedAt: now
+          }
+        },
+        { new: true }
+      );
+
+      if (updatedExam) {
+        stoppedExams.push(serializeExamSummary(updatedExam));
+      }
+    }
+
+    return stoppedExams;
+  },
+
   async deleteExam(examId) {
     const exam = await ExamModel.findById(examId);
     if (!exam) {
@@ -538,16 +580,28 @@ export const examService = {
     ]);
   },
 
-  async listAvailableExamsForUsers() {
+  async listAvailableExamsForUsers(userId = null) {
     const now = new Date();
     const exams = await ExamModel.find({
-      status: { $in: ["scheduled", "live"] },
-      scheduledEndAt: { $gt: now }
+      status: { $in: ["scheduled", "live", "completed"] },
+      scheduledEndAt: { $gt: new Date(now.getTime() - 48 * 60 * 60 * 1000) }
     })
       .sort({ scheduledStartAt: 1 })
       .lean();
 
-    return exams.map(serializeExamSummary);
+    const registrations = userId
+      ? await ExamRegistrationModel.find({ userId, examId: { $in: exams.map((e) => e._id) } }).lean()
+      : [];
+
+    return exams.map((exam) => {
+      const summary = serializeExamSummary(exam);
+      const reg = registrations.find((r) => r.examId.toString() === exam._id.toString());
+      if (reg) {
+        summary.hasJoined = true;
+        summary.hasFinished = ["submitted", "auto_submitted"].includes(reg?.status) || !!reg?.submittedAt;
+      }
+      return summary;
+    });
   },
 
   async assignUserToRoom(examId, userId) {
@@ -673,6 +727,16 @@ export const examService = {
   },
 
   async getParticipantCount(examId) {
+    try {
+      const redis = await connectRedis();
+      const cachedCount = await redis.scard(redisKeys.participants(String(examId)));
+      if (Number.isFinite(cachedCount) && cachedCount > 0) {
+        return cachedCount;
+      }
+    } catch {
+      // Fall through to Mongo count when Redis is unavailable.
+    }
+
     return ExamRegistrationModel.countDocuments({ examId });
   },
 
@@ -732,5 +796,23 @@ export const examService = {
     }
 
     return { startedExams, completedExams };
+  },
+
+  async getRealtimeExamClock() {
+    const now = new Date();
+    const exams = await ExamModel.find({
+      status: { $in: ["scheduled", "live"] },
+      scheduledEndAt: { $gt: now }
+    })
+      .select("_id status startedAt scheduledStartAt scheduledEndAt")
+      .lean();
+
+    return exams.map((exam) => ({
+      id: exam._id.toString(),
+      status: exam.status,
+      startedAt: exam.startedAt,
+      scheduledStartAt: exam.scheduledStartAt,
+      scheduledEndAt: exam.scheduledEndAt
+    }));
   }
 };

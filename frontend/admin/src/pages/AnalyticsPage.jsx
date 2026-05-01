@@ -139,9 +139,9 @@ export default function AnalyticsPage() {
           <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto">
             <Download size={14} /> Export
           </button>
-          <button 
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto" 
-            onClick={loadAnalytics} 
+          <button
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto"
+            onClick={loadAnalytics}
             disabled={loading}
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
@@ -181,10 +181,10 @@ export default function AnalyticsPage() {
                 <div>
                   <div className="flex items-center gap-2.5">
                     <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center",
-                      c.tone === "accent" ? "bg-accent/12 text-accent-foreground" : 
-                      c.tone === "success" ? "bg-success/10 text-success" : 
-                      c.tone === "destructive" ? "bg-destructive/10 text-destructive" : 
-                      "bg-primary/10 text-primary"
+                      c.tone === "accent" ? "bg-accent/12 text-accent-foreground" :
+                        c.tone === "success" ? "bg-success/10 text-success" :
+                          c.tone === "destructive" ? "bg-destructive/10 text-destructive" :
+                            "bg-primary/10 text-primary"
                     )}>
                       <Icon size={16} />
                     </div>

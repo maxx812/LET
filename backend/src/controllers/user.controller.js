@@ -28,9 +28,9 @@ export async function updateProfileController(req, res, next) {
   }
 }
 
-export async function getAvailableExamsController(_req, res, next) {
+export async function getAvailableExamsController(req, res, next) {
   try {
-    const exams = await userService.getAvailableExams();
+    const exams = await userService.getAvailableExams(req.auth?.sub);
     res.json({ success: true, exams });
   } catch (error) {
     next(error);
@@ -86,6 +86,15 @@ export async function getExamLeaderboardController(req, res, next) {
   try {
     const leaderboard = await userService.getExamLeaderboard(req.params.examId);
     res.status(200).json({ success: true, leaderboard });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getGlobalStatsController(_req, res, next) {
+  try {
+    const stats = await userService.getGlobalStats();
+    res.json({ success: true, stats });
   } catch (error) {
     next(error);
   }

@@ -17,7 +17,7 @@ export default function LeaderboardPage() {
         fetchLeaderboard(selectedExam || null),
         fetchExams()
       ]);
-      
+
       const list = lbData.entries || [];
       setEntries(list);
       setExams(examsData.items || examsData.exams || []);
@@ -27,7 +27,7 @@ export default function LeaderboardPage() {
         const highestScore = Math.max(...scores);
         const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
         const passCount = list.filter(e => e.accuracy >= 40).length;
-        
+
         setStats({
           totalRanked: list.length,
           highestScore,
@@ -50,11 +50,11 @@ export default function LeaderboardPage() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Leaderboard Control</h1>
-          <p className="admin-page-subtitle">Manage rankings, recalculate scores, and override positions</p>
+          <p className="admin-page-subtitle">Review candidate results, verify scores, and manage final rankings</p>
         </div>
         <div className="admin-action-row">
           <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:shadow-soft sm:w-auto">
-            <Download size={14} /> Export Rankings
+            <Download size={14} /> Export Leaderboard
           </button>
         </div>
       </div>
@@ -89,14 +89,14 @@ export default function LeaderboardPage() {
             <div className="w-8 h-8 rounded-xl bg-accent/12 flex items-center justify-center">
               <Trophy size={16} className="text-accent-foreground" />
             </div>
-            Ranking Management
+            Leaderboard Management
           </div>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <div>
               <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Filter by Exam</label>
-              <select 
+              <select
                 className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium appearance-none cursor-pointer"
                 value={selectedExam}
                 onChange={e => setSelectedExam(e.target.value)}
@@ -108,7 +108,7 @@ export default function LeaderboardPage() {
               </select>
             </div>
             <div className="flex items-end">
-              <button 
+              <button
                 className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:shadow-pop transition-all disabled:opacity-50"
                 onClick={loadData}
                 disabled={loading}
@@ -122,7 +122,7 @@ export default function LeaderboardPage() {
               </button>
             </div>
           </div>
-          
+
           {entries.length === 0 ? (
             <div className="text-center py-8 border-2 border-dashed border-border/50 rounded-2xl">
               <div className="w-16 h-16 rounded-3xl bg-gradient-accent flex items-center justify-center mx-auto mb-4 shadow-glow animate-float">
@@ -138,12 +138,12 @@ export default function LeaderboardPage() {
               <table className="admin-table">
                 <thead>
                   <tr className="admin-table-head">
-                    <th className="admin-th w-16">Rank</th>
-                    <th className="admin-th">Candidate</th>
-                    <th className="admin-th">Score</th>
+                    <th className="admin-th w-16">Position</th>
+                    <th className="admin-th">Candidate Name</th>
+                    <th className="admin-th">Final Score</th>
                     <th className="admin-th">Accuracy</th>
-                    <th className="admin-th">Time Taken</th>
-                    <th className="admin-th">Status</th>
+                    <th className="admin-th">Duration</th>
+                    <th className="admin-th">Outcome</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,9 +153,9 @@ export default function LeaderboardPage() {
                         <span className={cn(
                           "w-8 h-8 flex items-center justify-center rounded-xl font-bold text-sm",
                           entry.rank === 1 ? "bg-warning/15 text-warning border border-warning/30" :
-                          entry.rank === 2 ? "bg-muted text-muted-foreground border border-border" :
-                          entry.rank === 3 ? "bg-[#CD7F32]/15 text-[#CD7F32] border border-[#CD7F32]/30" :
-                          "bg-muted/30 text-muted-foreground"
+                            entry.rank === 2 ? "bg-muted text-muted-foreground border border-border" :
+                              entry.rank === 3 ? "bg-[#CD7F32]/15 text-[#CD7F32] border border-[#CD7F32]/30" :
+                                "bg-muted/30 text-muted-foreground"
                         )}>
                           {entry.rank || idx + 1}
                         </span>

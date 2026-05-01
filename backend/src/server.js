@@ -16,7 +16,11 @@ const io = new SocketIOServer(server, {
   cors: {
     origin: config.allowAllCorsOrigins ? "*" : config.corsOrigins,
     credentials: true
-  }
+  },
+  serveClient: false,
+  perMessageDeflate: false,
+  pingInterval: 25000,
+  pingTimeout: 20000
 });
 
 registerSocketHandlers(io);

@@ -19,7 +19,7 @@ export default function Topbar({ socketState, systemHealth, onMenuClick }) {
         </button>
         <div className="flex flex-col min-w-0">
           <div className="font-display font-bold text-[0.9375rem] sm:text-base text-foreground tracking-tight truncate">
-            Maharashtra Police Bharti
+            ExamStrike
           </div>
           <div className="text-[0.625rem] text-muted-foreground font-semibold uppercase tracking-widest flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />

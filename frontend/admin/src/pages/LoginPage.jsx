@@ -40,7 +40,7 @@ export default function LoginPage({ onLogin }) {
       {/* Decorative blobs */}
       <div className="absolute top-[-8rem] right-[-4rem] w-[26rem] h-[26rem] rounded-full bg-accent/20 blur-[60px] animate-pulse-accent" />
       <div className="absolute bottom-[-8rem] left-[-4rem] w-[26rem] h-[26rem] rounded-full bg-primary/20 blur-[60px] animate-float" />
-      
+
       {/* Grid overlay */}
       <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
 
@@ -70,7 +70,7 @@ export default function LoginPage({ onLogin }) {
                 <span>{error}</span>
               </div>
             )}
-            
+
             {success && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-success/10 text-success text-sm font-semibold animate-in fade-in slide-in-from-top-2">
                 <CheckCircle2 size={18} />

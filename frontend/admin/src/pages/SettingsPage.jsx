@@ -30,10 +30,10 @@ function SettingCard({ icon: Icon, title, color, children }) {
         <div className="font-display font-bold flex items-center gap-2.5 text-foreground">
           <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center",
             color?.includes("destructive") ? "bg-destructive/15 text-destructive" :
-            color?.includes("accent") ? "bg-accent/12 text-accent-foreground" :
-            color?.includes("primary") ? "bg-primary/15 text-primary" :
-            color?.includes("info") ? "bg-info/15 text-info" :
-            "bg-secondary text-foreground"
+              color?.includes("accent") ? "bg-accent/12 text-accent-foreground" :
+                color?.includes("primary") ? "bg-primary/15 text-primary" :
+                  color?.includes("info") ? "bg-info/15 text-info" :
+                    "bg-secondary text-foreground"
           )}>
             <Icon size={16} />
           </div>
@@ -170,10 +170,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Left Column */}
         <div className="flex flex-col gap-6">
-          
+
           <SettingCard icon={Calculator} title="Scoring & Grading" color="bg-accent/5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[

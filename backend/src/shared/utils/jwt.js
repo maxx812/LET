@@ -23,10 +23,22 @@ export function verifyAccessToken(token) {
 export function serializeAuthUser(user) {
   return {
     id: user._id.toString(),
+    uid: user.uid,
     name: user.name,
     email: user.email,
     role: user.role,
     authProvider: user.authProvider,
-    pictureUrl: user.pictureUrl || null
+    pictureUrl: user.pictureUrl || null,
+    phone: user.phone,
+    district: user.district,
+    education: user.education,
+    gender: user.gender,
+    category: user.category,
+    targetExamTypeId: user.targetExamTypeId,
+    targetExamType: user.targetExamType || null,
+    streak: user.streak || 0,
+    xp: user.xp || 0,
+    accuracy: user.accuracy || 0,
+    wins: user.wins || 0
   };
 }

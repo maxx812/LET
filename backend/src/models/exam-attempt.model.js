@@ -163,5 +163,6 @@ const examAttemptSchema = new mongoose.Schema(
 examAttemptSchema.index({ examId: 1, userId: 1 }, { unique: true });
 examAttemptSchema.index({ examId: 1, status: 1 });
 examAttemptSchema.index({ examId: 1, rank: 1 });
+examAttemptSchema.index({ examId: 1, score: -1, timeTakenSeconds: 1 });
 
 export const ExamAttemptModel = mongoose.model("ExamAttempt", examAttemptSchema);

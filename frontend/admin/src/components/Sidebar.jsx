@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard, FileQuestion, ClipboardList, Radio, Trophy,
-  Users, Swords, BarChart3, Settings, Zap, LogOut, ChevronRight,
-  Sparkles, FolderOpen
+  LayoutDashboard, FileQuestion, ClipboardList, Radio, UserCheck,
+  Users, Calendar, BarChart3, Settings, Zap, LogOut, ChevronRight,
+  Sparkles, FolderOpen, Monitor, Trophy
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -22,11 +22,11 @@ const navGroups = [
     ],
   },
   {
-    label: "Live Ops",
+    label: "Session Control",
     items: [
-      { to: "/live-monitor", label: "Live Monitor", icon: Radio, badge: "LIVE" },
+      { to: "/live-monitor", label: "Live Proctor", icon: Monitor, badge: "LIVE" },
       { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-      { to: "/tournament", label: "Tournament", icon: Swords },
+      { to: "/tournament", label: "Exam Slots", icon: Calendar },
     ],
   },
   {
@@ -53,8 +53,8 @@ export default function Sidebar({ user, onLogout, isOpen, onClose }) {
     >
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border/40">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-accent flex items-center justify-center text-accent-foreground shadow-glow transition-all hover:scale-105 hover:shadow-pop relative">
-          <Zap size={20} strokeWidth={2.5} />
+        <div className="w-10 h-10 rounded-2xl bg-card border border-sidebar-border/50 overflow-hidden shadow-soft transition-all hover:scale-105 hover:shadow-pop relative">
+          <img src="/logo.png" alt="Logo" className="h-full w-full object-contain" />
           <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-sidebar animate-pulse" />
         </div>
         <div className="flex flex-col leading-tight">

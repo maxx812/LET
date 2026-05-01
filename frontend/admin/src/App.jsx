@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { lazy, Suspense, useEffect, useState, useCallback } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { connectAdminSocket, disconnectAdminSocket } from "./services/socketClient";
 import { fetchDashboard } from "./services/apiClient";
@@ -6,16 +6,17 @@ import { fetchDashboard } from "./services/apiClient";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import QuestionsPage from "./pages/QuestionsPage";
-import ExamsPage from "./pages/ExamsPage";
-import LiveMonitorPage from "./pages/LiveMonitorPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import UsersPage from "./pages/UsersPage";
-import TournamentPage from "./pages/TournamentPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import SettingsPage from "./pages/SettingsPage";
-import CategoriesPage from "./pages/CategoriesPage";
+
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const QuestionsPage = lazy(() => import("./pages/QuestionsPage"));
+const ExamsPage = lazy(() => import("./pages/ExamsPage"));
+const LiveMonitorPage = lazy(() => import("./pages/LiveMonitorPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
+const TournamentPage = lazy(() => import("./pages/TournamentPage"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 
 const FALLBACK_METRICS = {
   activeExams: "—",
@@ -32,6 +33,20 @@ const FALLBACK_METRICS = {
 function ProtectedRoute({ user, children }) {
   if (!user) return <Navigate to="/login" replace />;
   return children;
+}
+
+function PageSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full p-2 md:p-4">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="rounded-xl border border-border bg-card p-4">
+          <div className="skeleton h-5 w-1/2 rounded mb-3" />
+          <div className="skeleton h-4 w-2/3 rounded mb-2" />
+          <div className="skeleton h-4 w-full rounded" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function App() {
@@ -152,41 +167,43 @@ export default function App() {
           onMenuClick={() => setIsMobileSidebarOpen((prev) => !prev)}
         />
         <div className="flex-1 px-4 py-5 sm:px-6 sm:py-6 max-w-7xl mx-auto w-full">
-          <Routes>
-            <Route path="/" element={
-              <ProtectedRoute user={user}>
-                <DashboardPage data={metrics} onRefresh={loadDashboard} />
-              </ProtectedRoute>
-            } />
-            <Route path="/questions" element={
-              <ProtectedRoute user={user}><QuestionsPage /></ProtectedRoute>
-            } />
-            <Route path="/exams" element={
-              <ProtectedRoute user={user}><ExamsPage /></ProtectedRoute>
-            } />
-            <Route path="/live-monitor" element={
-              <ProtectedRoute user={user}><LiveMonitorPage /></ProtectedRoute>
-            } />
-            <Route path="/leaderboard" element={
-              <ProtectedRoute user={user}><LeaderboardPage /></ProtectedRoute>
-            } />
-            <Route path="/users" element={
-              <ProtectedRoute user={user}><UsersPage /></ProtectedRoute>
-            } />
-            <Route path="/tournament" element={
-              <ProtectedRoute user={user}><TournamentPage /></ProtectedRoute>
-            } />
-            <Route path="/analytics" element={
-              <ProtectedRoute user={user}><AnalyticsPage /></ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute user={user}><SettingsPage /></ProtectedRoute>
-            } />
-            <Route path="/categories" element={
-              <ProtectedRoute user={user}><CategoriesPage /></ProtectedRoute>
-            } />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<PageSkeleton />}>
+            <Routes>
+              <Route path="/" element={
+                <ProtectedRoute user={user}>
+                  <DashboardPage data={metrics} onRefresh={loadDashboard} />
+                </ProtectedRoute>
+              } />
+              <Route path="/questions" element={
+                <ProtectedRoute user={user}><QuestionsPage /></ProtectedRoute>
+              } />
+              <Route path="/exams" element={
+                <ProtectedRoute user={user}><ExamsPage /></ProtectedRoute>
+              } />
+              <Route path="/live-monitor" element={
+                <ProtectedRoute user={user}><LiveMonitorPage /></ProtectedRoute>
+              } />
+              <Route path="/leaderboard" element={
+                <ProtectedRoute user={user}><LeaderboardPage /></ProtectedRoute>
+              } />
+              <Route path="/users" element={
+                <ProtectedRoute user={user}><UsersPage /></ProtectedRoute>
+              } />
+              <Route path="/tournament" element={
+                <ProtectedRoute user={user}><TournamentPage /></ProtectedRoute>
+              } />
+              <Route path="/analytics" element={
+                <ProtectedRoute user={user}><AnalyticsPage /></ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute user={user}><SettingsPage /></ProtectedRoute>
+              } />
+              <Route path="/categories" element={
+                <ProtectedRoute user={user}><CategoriesPage /></ProtectedRoute>
+              } />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
     </div>

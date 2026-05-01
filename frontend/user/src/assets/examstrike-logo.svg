@@ -1,0 +1,15 @@
+<svg width="320" height="96" viewBox="0 0 320 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ExamStrike logo">
+  <defs>
+    <linearGradient id="shieldGradient" x1="16" y1="10" x2="80" y2="86" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="boltGradient" x1="38" y1="24" x2="62" y2="74" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <path d="M48 8L84 22V46C84 67 69.2 84.4 48 90C26.8 84.4 12 67 12 46V22L48 8Z" fill="url(#shieldGradient)"/>
+  <path d="M51.6 22L34 50H47L42.8 74L62 43H50.2L51.6 22Z" fill="url(#boltGradient)"/>
+  <text x="102" y="60" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#0F172A" letter-spacing="0.2">ExamStrike</text>
+</svg>

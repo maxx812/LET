@@ -5,6 +5,9 @@ import {
   Shield, Globe, DatabaseZap,
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
 
 export default function DashboardPage({ data, onRefresh }) {
   const healthItems = [
@@ -17,11 +20,11 @@ export default function DashboardPage({ data, onRefresh }) {
   ];
 
   const metrics = [
-    { key: "liveExams", label: "Live Exams", icon: Monitor, color: "destructive", value: data.liveExams ?? data.activeExams, sub: "Running now" },
-    { key: "usersOnline", label: "Users Online", icon: Users, color: "success", value: data.usersOnline, sub: "Via Socket.io" },
-    { key: "totalQuestions", label: "Questions", icon: FileQuestion, color: "info", value: data.totalQuestions ?? "—", sub: "In bank" },
-    { key: "totalExams", label: "Total Exams", icon: ClipboardList, color: "accent", value: data.totalExams ?? data.examsToday, sub: "Created" },
-    { key: "totalUsers", label: "Registered", icon: Users, color: "primary", value: data.totalUsers ?? "—", sub: "Users" },
+    { key: "liveExams", label: "Live Sessions", icon: Monitor, color: "destructive", value: data.liveExams ?? data.activeExams, sub: "In progress" },
+    { key: "usersOnline", label: "Active Candidates", icon: Users, color: "success", value: data.usersOnline, sub: "Connected" },
+    { key: "totalQuestions", label: "Question Bank", icon: FileQuestion, color: "info", value: data.totalQuestions ?? "—", sub: "Verified items" },
+    { key: "totalExams", label: "Total Papers", icon: ClipboardList, color: "accent", value: data.totalExams ?? data.examsToday, sub: "Published" },
+    { key: "totalUsers", label: "Enrollments", icon: Users, color: "primary", value: data.totalUsers ?? "—", sub: "Total users" },
   ];
 
   const colorMap = {
@@ -66,10 +69,10 @@ export default function DashboardPage({ data, onRefresh }) {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-accent/25 flex items-center justify-center">
-                <Flame size={16} className="text-accent" />
+                <Monitor size={16} className="text-accent" />
               </div>
               <span className="text-[0.6875rem] uppercase tracking-[0.18em] font-bold opacity-80">
-                Platform Status
+                Examination Throughput
               </span>
             </div>
             <div className="font-display text-5xl md:text-6xl font-black tracking-tighter tabular-nums animate-count-up">
@@ -137,7 +140,7 @@ export default function DashboardPage({ data, onRefresh }) {
       </div>
 
       {/* System Health */}
-      <div className="admin-card overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="p-5 border-b border-border flex items-center justify-between bg-secondary/40">
           <div className="font-display text-lg font-bold flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center">
@@ -181,7 +184,7 @@ export default function DashboardPage({ data, onRefresh }) {
             })}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

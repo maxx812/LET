@@ -11,7 +11,8 @@ import {
   getExamTypesController,
   joinExamController,
   submitAnswerController,
-  submitExamController
+  submitExamController,
+  getGlobalStatsController
 } from "../controllers/user.controller.js";
 import {
   getExamLeaderboardSchema,
@@ -26,6 +27,7 @@ export const userRoutes = Router();
 
 userRoutes.get("/live-exams", getAvailableExamsController);
 userRoutes.get("/exam-types", getExamTypesController);
+userRoutes.get("/stats", getGlobalStatsController);
 
 userRoutes.use(authenticate, authorizeRoles("user"));
 

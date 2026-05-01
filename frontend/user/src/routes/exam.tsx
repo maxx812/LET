@@ -152,13 +152,13 @@ function ExamPage() {
       questions.flatMap((question, index) =>
         index in answers
           ? [
-              {
-                questionCode: question.questionCode,
-                selectedOptionKey: String.fromCharCode(65 + answers[index]),
-                clientRevision: revision,
-                submittedAt: new Date(revision).toISOString(),
-              },
-            ]
+            {
+              questionCode: question.questionCode,
+              selectedOptionKey: String.fromCharCode(65 + answers[index]),
+              clientRevision: revision,
+              submittedAt: new Date(revision).toISOString(),
+            },
+          ]
           : [],
       ),
     [answers, questions],
@@ -193,10 +193,30 @@ function ExamPage() {
 
       syncInFlightRef.current = true;
       try {
-        await syncExamAnswers({
-          examId,
-          answers: payload,
-        });
+        const socket = ensureSocketConnection();
+        if (socket.connected) {
+          const socketResult = await new Promise<{ ok: boolean }>((resolve) => {
+            socket.timeout(2000).emit(
+              SOCKET_EVENTS.SUBMIT_ANSWERS_BATCH,
+              { examId, answers: payload },
+              (_error: unknown, response: { ok?: boolean } | undefined) => {
+                resolve({ ok: Boolean(response?.ok) });
+              },
+            );
+          });
+
+          if (!socketResult.ok) {
+            await syncExamAnswers({
+              examId,
+              answers: payload,
+            });
+          }
+        } else {
+          await syncExamAnswers({
+            examId,
+            answers: payload,
+          });
+        }
         lastSyncedSnapshotRef.current = snapshot;
       } finally {
         syncInFlightRef.current = false;
@@ -400,10 +420,10 @@ function ExamPage() {
           <Shield className="h-16 w-16 text-destructive mx-auto mb-6 scale-110" />
           <h2 className="text-display text-3xl font-black mb-3">ACCESS DENIED</h2>
           <p className="text-primary-foreground/60 leading-relaxed mb-8">
-            You must join the arena through the official lobby to participate in this battle.
+            You must join the examination through the official waiting area to participate in this session.
           </p>
           <button onClick={() => navigate({ to: "/" })} className="inline-flex h-12 items-center justify-center rounded-xl bg-white/10 px-8 font-bold hover:bg-white/20 transition-all">
-            Back to Base
+            Back to Dashboard
           </button>
         </div>
       </div>
@@ -412,11 +432,26 @@ function ExamPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-focus text-primary-foreground">
-        <div className="text-center">
-          <RefreshCw className="mx-auto mb-4 h-10 w-10 animate-spin text-accent" />
-          <div className="text-display text-xl font-bold">Synchronizing Arena...</div>
-          <div className="mt-2 text-sm opacity-60">Preparing real-time questions and leaderboard</div>
+      <div className="mx-auto max-w-7xl w-full p-4 md:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 rounded-3xl border border-border p-5">
+            <div className="skeleton h-5 w-1/4 rounded mb-4" />
+            <div className="skeleton h-8 w-3/4 rounded mb-6" />
+            <div className="space-y-3">
+              <div className="skeleton h-14 w-full rounded-2xl" />
+              <div className="skeleton h-14 w-full rounded-2xl" />
+              <div className="skeleton h-14 w-full rounded-2xl" />
+              <div className="skeleton h-14 w-full rounded-2xl" />
+            </div>
+          </div>
+          <div className="lg:col-span-4 rounded-3xl border border-border p-5">
+            <div className="skeleton h-5 w-1/2 rounded mb-4" />
+            <div className="grid grid-cols-5 gap-2">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div key={i} className="skeleton h-8 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -443,9 +478,9 @@ function ExamPage() {
         <div className="text-center">
           <AlertTriangle className="mx-auto mb-4 h-16 w-16 text-warning" />
           <div className="text-display text-2xl font-bold">No Questions Found</div>
-          <div className="mt-2 text-primary-foreground/60 max-w-xs mx-auto">The arena is empty. Please contact admin to seed questions.</div>
+          <div className="mt-2 text-primary-foreground/60 max-w-xs mx-auto">The session environment is currently empty. Please contact the administrator.</div>
           <button onClick={() => navigate({ to: "/" })} className="mt-6 rounded-xl bg-white/10 px-6 py-2 font-bold hover:bg-white/20 transition-colors">
-            Return to Base
+            Return to Dashboard
           </button>
         </div>
       </div>
@@ -457,34 +492,32 @@ function ExamPage() {
       {/* Top bar */}
       <div className="sticky top-0 z-40 bg-white border-b-2 border-border shadow-sm">
         <div className="mx-auto max-w-7xl px-4 md:px-6 h-14 flex items-center justify-between gap-2 overflow-hidden">
-          <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">SSC CGL · Tier 1</div>
-            <div className="text-sm font-semibold truncate">Section: <span className="text-primary">{q.section}</span></div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-black">SSC CGL · Tier 1</div>
+            <div className="text-xs sm:text-sm font-bold truncate text-foreground/80">Section: <span className="text-primary">{q.section}</span></div>
           </div>
 
           <div
             className={cn(
-              "flex items-center gap-2 rounded-xl px-4 py-2 font-mono tabular text-lg font-bold transition-colors",
+              "flex items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2 font-mono tabular text-sm sm:text-lg font-black transition-colors shrink-0",
               criticalTime
                 ? "bg-destructive text-destructive-foreground animate-pulse-ring"
                 : lowTime
                   ? "bg-warning/20 text-warning-foreground border border-warning"
-                  : "bg-primary text-primary-foreground",
+                  : "bg-primary/10 text-primary border border-primary/20",
             )}
           >
             <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-sm sm:text-lg">{formatTime(timeLeft)}</span>
-            {lowTime && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />}
+            <span>{formatTime(timeLeft)}</span>
           </div>
 
           <button
             onClick={submit}
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-accent px-4 py-2 text-sm font-bold text-accent-foreground shadow-soft hover:shadow-glow transition-all disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl bg-gradient-accent px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-black text-accent-foreground shadow-soft hover:shadow-glow transition-all disabled:opacity-60 shrink-0"
           >
             <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-xs sm:text-sm font-bold">Submit</span>
-            <span className="hidden sm:inline"> Exam</span>
+            <span>Submit</span>
           </button>
         </div>
       </div>
@@ -492,10 +525,10 @@ function ExamPage() {
       <div className="mx-auto max-w-7xl px-4 md:px-6 py-6 grid lg:grid-cols-12 gap-6">
         {/* Left: Question (70%) */}
         <div className="lg:col-span-8">
-          <div className="rounded-3xl border border-border bg-card p-5 md:p-7 shadow-soft">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Question <span className="font-bold text-foreground tabular">{current + 1}</span> of {questions.length}
+          <div className="rounded-[1.5rem] md:rounded-3xl border border-border bg-card p-4 md:p-7 shadow-soft">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] md:text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                Q. <span className="text-foreground tabular">{current + 1}</span> / {questions.length}
               </div>
               <button
                 onClick={() => setMarked((m) => {
@@ -504,22 +537,22 @@ function ExamPage() {
                   return next;
                 })}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                  "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-tight transition-all",
                   isMarked
-                    ? "bg-warning/20 text-warning-foreground"
-                    : "bg-secondary text-muted-foreground hover:text-foreground",
+                    ? "bg-warning/20 text-warning-foreground border border-warning/30"
+                    : "bg-secondary text-muted-foreground hover:bg-secondary/80",
                 )}
               >
-                <Bookmark className={cn("h-3.5 w-3.5", isMarked && "fill-current")} />
-                {isMarked ? "Marked for review" : "Mark for review"}
+                <Bookmark className={cn("h-3 w-3 md:h-3.5 md:w-3.5", isMarked && "fill-current")} />
+                {isMarked ? "Reviewing" : "Review Later"}
               </button>
             </div>
 
-            <h2 className="mt-4 text-xl md:text-2xl font-bold leading-relaxed">
+            <h2 className="mt-4 text-lg md:text-2xl font-bold leading-tight md:leading-relaxed text-foreground/90">
               {q.text}
             </h2>
 
-            <div className="mt-8 grid gap-4">
+            <div className="mt-6 md:mt-8 grid gap-3 md:gap-4">
               {q.options.map((opt, i) => {
                 const isSel = selected === i;
                 return (
@@ -527,23 +560,23 @@ function ExamPage() {
                     key={i}
                     onClick={() => select(i)}
                     className={cn(
-                      "group flex items-center gap-4 rounded-2xl border p-4 text-left transition-all",
+                      "group flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl border p-3 md:p-4 text-left transition-all active:scale-[0.99]",
                       isSel
-                        ? "border-primary bg-primary/5 shadow-soft"
-                        : "border-border bg-card hover:border-primary/50 hover:bg-secondary/50",
+                        ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary/20"
+                        : "border-border bg-card hover:border-primary/30",
                     )}
                   >
                     <div
                       className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold tabular transition-all",
+                        "flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-lg md:rounded-xl text-xs md:text-sm font-black tabular transition-all",
                         isSel
-                          ? "bg-primary text-primary-foreground scale-105"
-                          : "bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                          ? "bg-primary text-primary-foreground shadow-glow"
+                          : "bg-secondary text-muted-foreground group-hover:bg-primary/10",
                       )}
                     >
-                      {isSel ? <Check className="h-5 w-5" /> : String.fromCharCode(65 + i)}
+                      {isSel ? <Check className="h-4 w-4 md:h-5 md:w-5" /> : String.fromCharCode(65 + i)}
                     </div>
-                    <span className={cn("text-base md:text-lg font-medium", isSel && "font-bold")}>{opt}</span>
+                    <span className={cn("text-sm md:text-lg font-medium", isSel && "font-bold text-foreground")}>{opt}</span>
                   </button>
                 );
               })}
@@ -551,116 +584,92 @@ function ExamPage() {
           </div>
 
           {/* Bottom nav */}
-          <div className="mt-5 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="mt-4 md:mt-5 flex items-center justify-between gap-2">
             <button
               onClick={() => goTo(current - 1)}
               disabled={current === 0}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 sm:px-4 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-secondary active:scale-[0.98] transition-all"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-3 md:py-2.5 text-xs md:text-sm font-bold disabled:opacity-40 hover:bg-secondary active:scale-[0.98] transition-all"
             >
-              <ChevronLeft className="h-4 w-4" /> <span className="sm:inline">Prev</span>
+              <ChevronLeft className="h-4 w-4" /> <span>Prev</span>
             </button>
 
-            <div className="text-[10px] text-muted-foreground hidden md:block">
+            <div className="text-[10px] text-muted-foreground hidden lg:block">
               Shortcuts: <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">A B C D</kbd> · <kbd className="rounded bg-secondary px-1.5 py-0.5 text-mono">N</kbd> next
             </div>
 
-            <div className="flex flex-[2] sm:flex-none items-center gap-2">
-              <button
-                onClick={() => {
-                  setMarked((m) => new Set(m).add(current));
-                  goTo(current + 1);
-                }}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-warning/40 bg-warning/10 text-warning-foreground px-4 py-2.5 text-sm font-semibold hover:bg-warning/20 transition-all"
-              >
-                <Flag className="h-4 w-4" /> Review
-              </button>
-              <button
-                onClick={() => goTo(current + 1)}
-                disabled={current === questions.length - 1}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 sm:px-6 py-2.5 text-sm font-bold disabled:opacity-40 hover:bg-primary/90 active:scale-[0.98] transition-all shadow-soft"
-              >
-                Next <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => goTo(current + 1)}
+              disabled={current === questions.length - 1}
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 md:px-8 py-3 md:py-2.5 text-xs md:text-sm font-black disabled:opacity-40 hover:brightness-110 active:scale-[0.98] transition-all shadow-glow"
+            >
+              <span>Next</span> <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
         {/* Right: Palette */}
-        <aside className="lg:col-span-4">
-          <div className="lg:sticky lg:top-32 rounded-3xl border border-border bg-card overflow-hidden shadow-soft">
-            <div className="p-5 border-b border-border bg-secondary/30">
+        <aside className="lg:col-span-4 mt-4 lg:mt-0">
+          <div className="lg:sticky lg:top-24 rounded-[1.5rem] md:rounded-3xl border border-border bg-card overflow-hidden shadow-soft">
+            <div className="p-4 md:p-5 border-b border-border bg-secondary/20">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-display font-bold">Question Palette</h3>
-                <div className="text-xs font-bold text-primary tabular-nums">
-                  {counts.answered}/{questions.length} Answered
+                <h3 className="text-sm md:text-base font-black uppercase tracking-tight">Question Palette</h3>
+                <div className="text-[10px] md:text-xs font-black text-primary tabular-nums bg-primary/10 px-2 py-0.5 rounded-md">
+                  {counts.answered}/{questions.length} COMPLETED
                 </div>
               </div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">SSC CGL · Tier 1 Navigation</div>
             </div>
 
-            <div className="p-5">
+            <div className="p-4 md:p-5">
               {/* Legend Grid */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <PaletteLegend 
-                  icon={<div className="h-6 w-6 rounded-md bg-success flex items-center justify-center text-[10px] font-bold text-white">45</div>} 
-                  count={counts.answered} 
-                  label="Answered" 
+              <div className="grid grid-cols-2 gap-2 md:gap-3 mb-5">
+                <PaletteLegend
+                  icon={<div className="h-5 w-5 rounded-md bg-success flex items-center justify-center text-[9px] font-bold text-white shadow-sm">✓</div>}
+                  count={counts.answered}
+                  label="Answered"
                 />
-                <PaletteLegend 
-                  icon={<div className="h-6 w-6 rounded-md bg-destructive flex items-center justify-center text-[10px] font-bold text-white">45</div>} 
-                  count={counts.skipped} 
-                  label="Not Answered" 
+                <PaletteLegend
+                  icon={<div className="h-5 w-5 rounded-md bg-destructive flex items-center justify-center text-[9px] font-bold text-white shadow-sm">✕</div>}
+                  count={counts.skipped}
+                  label="Skipped"
                 />
-                <PaletteLegend 
-                  icon={<div className="h-6 w-6 rounded-md bg-secondary border border-border flex items-center justify-center text-[10px] font-bold text-muted-foreground">45</div>} 
-                  count={counts.unvisited} 
-                  label="Not Visited" 
+                <PaletteLegend
+                  icon={<div className="h-5 w-5 rounded-md bg-secondary border border-border flex items-center justify-center text-[9px] font-bold text-muted-foreground">?</div>}
+                  count={counts.unvisited}
+                  label="Unvisited"
                 />
-                <PaletteLegend 
-                  icon={<div className="h-6 w-6 rounded-md bg-warning flex items-center justify-center text-[10px] font-bold text-white">45</div>} 
-                  count={counts.review} 
-                  label="Mark for Review" 
+                <PaletteLegend
+                  icon={<div className="h-5 w-5 rounded-md bg-warning flex items-center justify-center text-[9px] font-bold text-white shadow-sm">!</div>}
+                  count={counts.review}
+                  label="Review"
                 />
-                <div className="col-span-2">
-                  <PaletteLegend 
-                    icon={
-                      <div className="relative h-6 w-6 rounded-md bg-warning flex items-center justify-center text-[10px] font-bold text-white">
-                        45
-                        <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-success border-2 border-card" />
-                      </div>
-                    } 
-                    count={0} 
-                    label="Answered & Marked for Review" 
-                  />
-                </div>
               </div>
 
-              <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2.5">
+              <div className="max-h-[220px] md:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                <div className="grid grid-cols-6 sm:grid-cols-10 lg:grid-cols-5 gap-2">
                   {questions.map((qq, i) => {
                     const s = status(i);
                     const isCurrent = i === current;
                     const hasAns = i in answers;
                     const isM = marked.has(i);
-                    
-                    let bgClass = "bg-secondary text-muted-foreground border-transparent";
+
+                    let bgClass = "bg-secondary/50 text-muted-foreground border-transparent";
                     if (isM) bgClass = "bg-warning text-white border-transparent";
                     else if (hasAns) bgClass = "bg-success text-white border-transparent";
-                    else if (visited.has(i)) bgClass = "bg-destructive text-white border-transparent";
+                    else if (visited.has(i)) bgClass = "bg-destructive/80 text-white border-transparent";
 
                     return (
                       <button
                         key={qq.id}
                         onClick={() => goTo(i)}
                         className={cn(
-                          "relative h-10 w-full rounded-lg text-xs font-black tabular transition-all border-2",
+                          "relative h-9 md:h-10 w-full rounded-lg text-[10px] md:text-xs font-black tabular transition-all border-2",
                           bgClass,
-                          isCurrent ? "ring-2 ring-primary ring-offset-2 scale-110 z-10" : "hover:scale-105",
+                          isCurrent ? "ring-2 ring-primary ring-offset-1 scale-105 z-10" : "hover:brightness-110",
                         )}
                       >
                         {i + 1}
                         {isM && hasAns && (
-                          <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-success border-2 border-warning" />
+                          <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-success border-2 border-card" />
                         )}
                       </button>
                     );
@@ -697,4 +706,5 @@ function PaletteLegend({ icon, count, label }: { icon: React.ReactNode; count: n
     </div>
   );
 }
+
 

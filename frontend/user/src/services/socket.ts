@@ -35,6 +35,7 @@ export const SOCKET_EVENTS = {
   JOIN_EXAM: "exam:join",
   LEAVE_EXAM: "exam:leave",
   SUBSCRIBE_LEADERBOARD: "leaderboard:subscribe",
+  SUBMIT_ANSWERS_BATCH: "exam:answers:batch"
 } as const;
 
 export function getSocket() {

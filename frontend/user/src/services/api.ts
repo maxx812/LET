@@ -100,6 +100,17 @@ apiClient.interceptors.response.use(
     const isFirebaseSessionIssue =
       responseCode === "FIREBASE_TOKEN_EXPIRED" ||
       responseCode === "INVALID_FIREBASE_TOKEN";
+    const shouldRetryRequest =
+      originalRequest &&
+      !originalRequest._networkRetried &&
+      !originalRequest.url?.includes("/auth/user/firebase") &&
+      (!error.response || error.response.status >= 500);
+
+    if (shouldRetryRequest) {
+      originalRequest._networkRetried = true;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return apiClient(originalRequest);
+    }
 
     if (
       error.response?.status === 401 &&
@@ -244,6 +255,11 @@ export async function fetchExamLeaderboard(examId: string) {
   return unwrapResponse(data, "leaderboard");
 }
 
+export async function fetchGlobalStats() {
+  const { data } = await apiClient.get("/user/stats");
+  return unwrapResponse<any>(data, "stats");
+}
+
 export async function loginWithFirebase(payload: {
   idToken: string;
   name?: string;
@@ -264,6 +280,7 @@ export const userApi = {
   loginWithFirebase,
   submitExam,
   syncExamAnswers,
+  fetchGlobalStats,
 };
 
 export default apiClient;

@@ -595,16 +595,60 @@ export const adminService = {
 
   // ── Leaderboard (admin view) ──
   async getLeaderboard(examId, limit = 50) {
-    const query = examId ? { examId, status: "evaluated" } : { status: "evaluated" };
-    const attempts = await ExamAttemptModel.find(query)
-      .sort({ score: -1, timeTakenSeconds: 1 })
-      .limit(limit)
-      .select("userName userEmail score accuracy correctCount wrongCount skippedCount timeTakenSeconds rank qualified examId")
-      .lean();
+    const statusFilter = { $in: ["evaluated", "submitted", "auto_submitted"] };
+    
+    if (examId) {
+      // For a specific exam, show all attempts (each user can only have one anyway)
+      const attempts = await ExamAttemptModel.find({ examId, status: statusFilter })
+        .sort({ score: -1, timeTakenSeconds: 1 })
+        .limit(limit)
+        .select("userName userEmail score accuracy correctCount wrongCount skippedCount timeTakenSeconds rank qualified examId")
+        .lean();
 
-    return {
-      entries: attempts,
-      total: await ExamAttemptModel.countDocuments(query)
-    };
+      return {
+        entries: attempts,
+        total: await ExamAttemptModel.countDocuments({ examId, status: statusFilter })
+      };
+    } else {
+      // For global leaderboard, show unique users with their BEST score across all exams
+      const pipeline = [
+        { $match: { status: statusFilter } },
+        {
+          $sort: { score: -1, timeTakenSeconds: 1 }
+        },
+        {
+          $group: {
+            _id: "$userId",
+            userName: { $first: "$userName" },
+            userEmail: { $first: "$userEmail" },
+            score: { $first: "$score" },
+            accuracy: { $first: "$accuracy" },
+            correctCount: { $first: "$correctCount" },
+            wrongCount: { $first: "$wrongCount" },
+            skippedCount: { $first: "$skippedCount" },
+            timeTakenSeconds: { $first: "$timeTakenSeconds" },
+            rank: { $first: "$rank" },
+            qualified: { $first: "$qualified" },
+            examId: { $first: "$examId" }
+          }
+        },
+        { $sort: { score: -1, timeTakenSeconds: 1 } },
+        { $limit: limit }
+      ];
+
+      const entries = await ExamAttemptModel.aggregate(pipeline);
+      
+      // Total unique users who have participated
+      const totalResult = await ExamAttemptModel.aggregate([
+        { $match: { status: statusFilter } },
+        { $group: { _id: "$userId" } },
+        { $count: "count" }
+      ]);
+
+      return {
+        entries,
+        total: totalResult[0]?.count || 0
+      };
+    }
   }
 };

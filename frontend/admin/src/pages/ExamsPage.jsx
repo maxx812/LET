@@ -20,6 +20,7 @@ export default function ExamsPage() {
   const [startsAt, setStartsAt] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [totalQuestions, setTotalQuestions] = useState(50);
+  const [maxUsersPerRoom, setMaxUsersPerRoom] = useState(100);
   const [creating, setCreating] = useState(false);
   const [examTypes, setExamTypes] = useState([]);
   const [allowedTopics, setAllowedTopics] = useState([]);
@@ -43,18 +44,18 @@ export default function ExamsPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     loadExams();
     async function loadMeta() {
       try {
         const data = await fetchExamTypes();
         setExamTypes(data.examTypes || []);
-        
+
         // Fetch topics from questions API
         const qData = await fetchQuestions({ limit: 1 });
         setAllowedTopics(qData.allowedTopics || []);
         setSelectedTopics(qData.allowedTopics || []);
-      } catch {}
+      } catch { }
     }
     loadMeta();
   }, [loadExams]);
@@ -66,44 +67,45 @@ export default function ExamsPage() {
     setCreating(true);
     try {
       const date = new Date(startsAt).toISOString();
-      await createExamApi({ 
-        title, 
-        scheduledStartAt: date, 
-        durationMinutes, 
-        totalQuestions, 
+      await createExamApi({
+        title,
+        scheduledStartAt: date,
+        durationMinutes,
+        totalQuestions,
         topics: selectedTopics,
-        examTypeId 
+        examTypeId,
+        maxUsersPerRoom
       });
-      setTitle(""); setStartsAt(""); setDurationMinutes(60); setTotalQuestions(50); setExamTypeId("");
+      setTitle(""); setStartsAt(""); setDurationMinutes(60); setTotalQuestions(50); setExamTypeId(""); setMaxUsersPerRoom(100);
       setShowCreate(false);
-      showToastMsg("Exam created successfully!");
+      showToastMsg("Global Battle created successfully!");
       loadExams();
     } catch (err) {
-      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to create exam", "error");
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to create battle", "error");
     } finally {
       setCreating(false);
     }
   }
 
   async function handlePublish(id) {
-    if (!window.confirm("Publish this exam? Students will be able to join.")) return;
+    if (!window.confirm("Publish this battle? Candidates will be able to join the lobby.")) return;
     try {
       await publishExam(id);
-      showToastMsg("Exam published!");
+      showToastMsg("Battle published!");
       loadExams();
     } catch (err) {
-      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to publish exam", "error");
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to publish battle", "error");
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("Delete this exam permanently?")) return;
+    if (!window.confirm("Delete this battle permanently?")) return;
     try {
       await deleteExam(id);
       setExams((prev) => prev.filter((ex) => (ex._id || ex.id) !== id));
-      showToastMsg("Exam deleted successfully");
+      showToastMsg("Battle deleted successfully");
     } catch (err) {
-      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to delete exam", "error");
+      showToastMsg(err?.response?.data?.error?.message || err?.response?.data?.message || "Failed to delete battle", "error");
     }
   }
 
@@ -130,8 +132,13 @@ export default function ExamsPage() {
 
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Exam Management</h1>
-          <p className="admin-page-subtitle">Create, schedule and manage exam sessions</p>
+          <div className="flex items-center gap-3">
+            <h1 className="admin-page-title">Battle Management</h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[0.625rem] font-black uppercase tracking-widest bg-accent/12 text-accent-foreground border border-accent/20">
+              <Zap size={10} fill="currentColor" /> Pro Mode
+            </span>
+          </div>
+          <p className="admin-page-subtitle">Schedule and control large-scale concurrent exam arenas</p>
         </div>
         <div className="admin-action-row">
           <button
@@ -140,14 +147,14 @@ export default function ExamsPage() {
             disabled={loading}
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            {loading ? "Loading…" : "Refresh"}
+            {loading ? "Syncing Arena…" : "Refresh"}
           </button>
           <button
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-accent px-5 py-2.5 text-sm font-black text-accent-foreground shadow-glow transition-all hover:-translate-y-0.5 hover:shadow-pop sm:w-auto"
             onClick={() => setShowCreate(!showCreate)}
           >
             {showCreate ? <X size={14} /> : <Plus size={14} />}
-            {showCreate ? "Cancel" : "Create Exam"}
+            {showCreate ? "Cancel Battle" : "Start New Battle"}
           </button>
         </div>
       </div>
@@ -155,10 +162,10 @@ export default function ExamsPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total", value: examStats.total, icon: Database, color: "primary" },
-          { label: "Live", value: examStats.live, icon: Radio, color: "success" },
-          { label: "Draft", value: examStats.draft, icon: ClipboardList, color: "warning" },
-          { label: "Completed", value: examStats.completed, icon: CheckCircle, color: "info" },
+          { label: "Total Arenas", value: examStats.total, icon: Database, color: "primary" },
+          { label: "Active Battles", value: examStats.live, icon: Radio, color: "success" },
+          { label: "Upcoming", value: examStats.draft, icon: ClipboardList, color: "warning" },
+          { label: "Historical", value: examStats.completed, icon: CheckCircle, color: "info" },
         ].map(s => {
           const Icon = s.icon;
           const colorClasses = {
@@ -183,71 +190,83 @@ export default function ExamsPage() {
 
       {/* Create */}
       {showCreate && (
-        <div className="admin-card animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="p-5 border-b border-border flex items-center bg-primary/5">
+        <div className="admin-card animate-in fade-in slide-in-from-top-2 duration-300 border-accent/20">
+          <div className="p-5 border-b border-border flex items-center bg-accent/5">
             <div className="font-display font-bold flex items-center gap-2.5 text-foreground">
-              <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Plus size={16} className="text-primary" />
+              <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center">
+                <Zap size={16} className="text-accent-foreground" />
               </div>
-              Create New Exam
+              Configure Global Battle Arena
             </div>
           </div>
           <div className="p-6">
             <form onSubmit={handleCreate}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
                 <div>
-                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Exam Title *</label>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Battle Title *</label>
                   <input
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
-                    placeholder="e.g. Morning Mock 01"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium"
+                    placeholder="e.g. MPSC State Service Mock 01"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Schedule *</label>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Kickoff Time *</label>
                   <input
                     type="datetime-local"
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium"
                     value={startsAt}
                     onChange={e => setStartsAt(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Duration (min)</label>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Category *</label>
+                  <select
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium appearance-none cursor-pointer"
+                    value={examTypeId}
+                    onChange={e => setExamTypeId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Exam Type</option>
+                    {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Duration (Minutes)</label>
                   <input
                     type="number"
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
-                    placeholder="60"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium"
                     value={durationMinutes}
                     onChange={e => setDurationMinutes(Number(e.target.value))}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Questions Count</label>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Total Questions</label>
                   <input
                     type="number"
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium"
-                    placeholder="50"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium"
                     value={totalQuestions}
                     onChange={e => setTotalQuestions(Number(e.target.value))}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Exam Type *</label>
-                  <select
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all font-medium appearance-none cursor-pointer"
-                    value={examTypeId}
-                    onChange={e => setExamTypeId(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {examTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                  </select>
+                  <label className="block text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-widest mb-2">Arena Capacity (Max per Room)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition-all font-medium pr-12"
+                      value={maxUsersPerRoom}
+                      onChange={e => setMaxUsersPerRoom(Number(e.target.value))}
+                      required
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground">USERS</div>
+                  </div>
+                  <p className="mt-1 text-[10px] text-muted-foreground">Set to 500+ for large simultaneous battles.</p>
                 </div>
               </div>
 
@@ -262,14 +281,14 @@ export default function ExamsPage() {
                         key={topic}
                         type="button"
                         onClick={() => {
-                          setSelectedTopics(prev => 
+                          setSelectedTopics(prev =>
                             isSelected ? prev.filter(t => t !== topic) : [...prev, topic]
                           );
                         }}
                         className={cn(
                           "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border",
-                          isSelected 
-                            ? "bg-primary text-primary-foreground border-primary shadow-soft" 
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary shadow-soft"
                             : "bg-background text-muted-foreground border-border hover:border-primary/50"
                         )}
                       >
@@ -397,35 +416,35 @@ export default function ExamsPage() {
               </button>
             </div>
             <div className="p-6 space-y-4">
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-2xl bg-secondary/30">
-                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Status</div>
-                    <div className="text-sm font-bold capitalize">{selectedExam.status}</div>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-secondary/30">
-                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Questions</div>
-                    <div className="text-sm font-bold">{selectedExam.totalQuestions} Questions</div>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-secondary/30">
-                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Starts At</div>
-                    <div className="text-sm font-bold">{new Date(selectedExam.scheduledStartAt).toLocaleString()}</div>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-secondary/30">
-                    <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Duration</div>
-                    <div className="text-sm font-bold">{selectedExam.durationMinutes} Minutes</div>
-                  </div>
-               </div>
-               <div className="p-4 rounded-2xl border border-border bg-primary/5">
-                 <div className="text-[0.625rem] font-bold text-primary uppercase tracking-widest mb-2">Topic Distribution</div>
-                 <div className="flex flex-wrap gap-2">
-                   {selectedExam.topics?.map(t => (
-                     <span key={t} className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[0.6875rem] font-bold">{t}</span>
-                   ))}
-                 </div>
-               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-2xl bg-secondary/30">
+                  <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Status</div>
+                  <div className="text-sm font-bold capitalize">{selectedExam.status}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-secondary/30">
+                  <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Questions</div>
+                  <div className="text-sm font-bold">{selectedExam.totalQuestions} Questions</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-secondary/30">
+                  <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Starts At</div>
+                  <div className="text-sm font-bold">{new Date(selectedExam.scheduledStartAt).toLocaleString()}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-secondary/30">
+                  <div className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-widest mb-1">Duration</div>
+                  <div className="text-sm font-bold">{selectedExam.durationMinutes} Minutes</div>
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl border border-border bg-primary/5">
+                <div className="text-[0.625rem] font-bold text-primary uppercase tracking-widest mb-2">Topic Distribution</div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedExam.topics?.map(t => (
+                    <span key={t} className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[0.6875rem] font-bold">{t}</span>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="p-6 border-t border-border bg-secondary/20">
-              <button 
+              <button
                 onClick={() => setShowDetails(false)}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-soft transition-all active:scale-[0.98]"
               >
