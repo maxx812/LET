@@ -29,6 +29,7 @@ const translations = {
     joinLive: "Join Live Exam",
     signInAccount: "Sign In to Account",
     guest: "Guest",
+    liveNow: "LIVE",
   },
   mr: {
     home: "होम",
@@ -44,6 +45,7 @@ const translations = {
     joinLive: "लाईव्ह परीक्षा",
     signInAccount: "लॉगिन करा",
     guest: "अतिथी",
+    liveNow: "सध्या सुरू",
   },
 };
 
