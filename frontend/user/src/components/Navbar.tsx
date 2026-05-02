@@ -205,18 +205,28 @@ export function Navbar() {
             )}
           </div>
 
-          <button
-            aria-label="Toggle menu"
-            className="md:hidden p-2 rounded-lg text-foreground hover:bg-secondary relative"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            {!open && liveCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-black text-white ring-2 ring-background animate-pulse">
-                {liveCount}
+          <div className="flex items-center gap-2 md:hidden">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
               </span>
-            )}
-          </button>
+              <AnimatedNumber value={onlineCount} />
+            </span>
+
+            <button
+              aria-label="Toggle menu"
+              className="p-2 rounded-lg text-foreground hover:bg-secondary relative"
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {!open && liveCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-black text-white ring-2 ring-background animate-pulse">
+                  {liveCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile sheet */}
