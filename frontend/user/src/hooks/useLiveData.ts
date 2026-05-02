@@ -6,7 +6,7 @@ import {
   subscribeLeaderboard,
   joinExamChannel,
 } from "@/services/socket";
-import { fetchExamLeaderboard } from "@/services/api";
+import { fetchExamLeaderboard, fetchLiveExams } from "@/services/api";
 
 /**
  * Hook for real-time live counters (players online, countdown).
@@ -246,7 +246,6 @@ export function useLeaderboard(examId?: string) {
   return useExamLeaderboard(activeExamId);
 }
 
-import { fetchLiveExams } from "@/services/api";
 
 export function useLiveExamCount() {
   const [count, setCount] = useState(0);
