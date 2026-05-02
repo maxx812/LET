@@ -3,7 +3,7 @@ import { Home, Trophy, User, Swords, Menu, X, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { AuthModal } from "@/components/AuthModal";
-import { useOnlineUserCount } from "@/hooks/useLiveData";
+import { useOnlineUserCount, useLiveExamCount } from "@/hooks/useLiveData";
 import { refreshSocketSession } from "@/services/socket";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import {
@@ -14,20 +14,58 @@ import {
   type SessionUser,
 } from "@/lib/authService";
 
-const navItems = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/lobby", label: "Lobby", icon: Swords },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/profile", label: "Profile", icon: User },
-] as const;
+const translations = {
+  en: {
+    home: "Home",
+    lobby: "Lobby",
+    leaderboard: "Leaderboard",
+    profile: "Profile",
+    compete: "Compete",
+    ranks: "Ranks",
+    me: "Me",
+    online: "Online",
+    signIn: "Sign In",
+    logout: "Logout",
+    joinLive: "Join Live Exam",
+    signInAccount: "Sign In to Account",
+    guest: "Guest",
+  },
+  mr: {
+    home: "होम",
+    lobby: "लॉबी",
+    leaderboard: "रँकिंग",
+    profile: "प्रोफाइल",
+    compete: "स्पर्धा",
+    ranks: "रँक",
+    me: "माहिती",
+    online: "ऑनलाईन",
+    signIn: "लॉगिन",
+    logout: "लॉगआउट",
+    joinLive: "लाईव्ह परीक्षा",
+    signInAccount: "लॉगिन करा",
+    guest: "अतिथी",
+  },
+};
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const onlineCount = useOnlineUserCount(0);
+  const liveCount = useLiveExamCount();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [lang, setLang] = useState<"en" | "mr">(() => {
+    return (localStorage.getItem("examstrike_lang") as "en" | "mr") || "en";
+  });
+  const t = translations[lang];
+
+  const navItems = [
+    { to: "/", label: t.home, icon: Home },
+    { to: "/lobby", label: t.lobby, icon: Swords },
+    { to: "/leaderboard", label: t.leaderboard, icon: Trophy },
+    { to: "/profile", label: t.profile, icon: User },
+  ] as const;
 
   useEffect(() => {
     let isActive = true;
@@ -45,15 +83,25 @@ export function Navbar() {
       });
 
     const handleAuthChanged = () => setUser(getStoredUser());
-    const handleStorage = () => setUser(getStoredUser());
+    const handleStorage = () => {
+      setUser(getStoredUser());
+      const nextLang = (localStorage.getItem("examstrike_lang") as "en" | "mr") || "en";
+      setLang(nextLang);
+    };
+    const handleLangChanged = () => {
+      const nextLang = (localStorage.getItem("examstrike_lang") as "en" | "mr") || "en";
+      setLang(nextLang);
+    };
     const unsubscribe = subscribeAuthPersistence((nextUser) => setUser(nextUser));
 
     window.addEventListener("storage", handleStorage);
     window.addEventListener("auth:changed", handleAuthChanged);
+    window.addEventListener("lang:changed", handleLangChanged);
     return () => {
       isActive = false;
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("auth:changed", handleAuthChanged);
+      window.removeEventListener("lang:changed", handleLangChanged);
       unsubscribe();
     };
   }, []);
@@ -122,7 +170,7 @@ export function Navbar() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
               </span>
-              <AnimatedNumber value={onlineCount} /> Online
+              <AnimatedNumber value={onlineCount} /> {t.online}
             </span>
 
             {mounted ? (
@@ -134,19 +182,19 @@ export function Navbar() {
                     </div>
                   </Link>
                   <button onClick={handleLogout} className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors" title="Log Out">
-                    Logout
+                    {t.logout}
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 border-l border-border pl-4">
                   <button onClick={() => setIsAuthOpen(true)} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
-                    Sign In
+                    {t.signIn}
                   </button>
                   <Link
                     to="/lobby"
                     className="hidden lg:inline-flex items-center gap-2 rounded-xl bg-gradient-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all hover:-translate-y-px"
                   >
-                    <Swords className="h-4 w-4" /> Guest
+                    <Swords className="h-4 w-4" /> {t.guest}
                   </Link>
                 </div>
               )
@@ -157,10 +205,15 @@ export function Navbar() {
 
           <button
             aria-label="Toggle menu"
-            className="md:hidden p-2 rounded-lg text-foreground hover:bg-secondary"
+            className="md:hidden p-2 rounded-lg text-foreground hover:bg-secondary relative"
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {!open && liveCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-black text-white ring-2 ring-background animate-pulse">
+                {liveCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -177,11 +230,22 @@ export function Navbar() {
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                      "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium",
                       active ? "bg-secondary text-foreground" : "text-muted-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4" /> {item.label}
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4" /> {item.label}
+                    </div>
+                    {item.to === "/lobby" && liveCount > 0 && (
+                      <span className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-black text-destructive">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-destructive"></span>
+                        </span>
+                        {liveCount} {t.liveNow}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -235,13 +299,31 @@ export function Navbar() {
 
 export function MobileBottomNav() {
   const { pathname } = useLocation();
+  const liveCount = useLiveExamCount();
+  const [lang, setLang] = useState<"en" | "mr">(() => {
+    return (localStorage.getItem("examstrike_lang") as "en" | "mr") || "en";
+  });
+  const t = translations[lang];
+
+  useEffect(() => {
+    const handleLang = () => {
+      setLang((localStorage.getItem("examstrike_lang") as "en" | "mr") || "en");
+    };
+    window.addEventListener("lang:changed", handleLang);
+    window.addEventListener("storage", handleLang);
+    return () => {
+      window.removeEventListener("lang:changed", handleLang);
+      window.removeEventListener("storage", handleLang);
+    };
+  }, []);
+
   if (pathname.startsWith("/exam")) return null;
 
   const items = [
-    { to: "/", label: "Home", icon: Home },
-    { to: "/lobby", label: "Compete", icon: Swords },
-    { to: "/leaderboard", label: "Ranks", icon: Trophy },
-    { to: "/profile", label: "Me", icon: User },
+    { to: "/", label: t.home, icon: Home },
+    { to: "/lobby", label: t.compete, icon: Swords },
+    { to: "/leaderboard", label: t.ranks, icon: Trophy },
+    { to: "/profile", label: t.me, icon: User },
   ] as const;
 
   return (
@@ -250,16 +332,25 @@ export function MobileBottomNav() {
         {items.map((it) => {
           const Icon = it.icon;
           const active = pathname === it.to || (it.to !== "/" && pathname.startsWith(it.to));
+          const isLobby = it.to === "/lobby";
           return (
-            <li key={it.to}>
+            <li key={it.to} className="relative">
               <Link
                 to={it.to}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium",
+                  "flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all",
                   active ? "text-accent" : "text-muted-foreground",
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "scale-110")} strokeWidth={active ? 2.5 : 2} />
+                <div className="relative">
+                  <Icon className={cn("h-5 w-5", active && "scale-110")} strokeWidth={active ? 2.5 : 2} />
+                  {isLobby && liveCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive"></span>
+                    </span>
+                  )}
+                </div>
                 {it.label}
               </Link>
             </li>

@@ -248,6 +248,7 @@ export function registerSocketHandlers(io) {
           });
         }
 
+        socket.join(examChannel(targetExamId));
         const leaderboard = await examEngineService.getLeaderboard(targetExamId);
         socket.emit("leaderboard:update", leaderboard);
         ack?.({ ok: true, leaderboard });

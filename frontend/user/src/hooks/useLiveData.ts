@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ensureSocketConnection,
-  joinExamChannel,
   leaveExamChannel,
   SOCKET_EVENTS,
   subscribeLeaderboard,
+  joinExamChannel,
 } from "@/services/socket";
+import { fetchExamLeaderboard } from "@/services/api";
 
 /**
  * Hook for real-time live counters (players online, countdown).
@@ -36,7 +37,9 @@ export function useLobbyPlayerCount(examId = "", enabled = true, initial = 0) {
     }
 
     const socket = ensureSocketConnection();
-    const handler = (next: number | { count?: number; participantCount?: number }) => {
+    const handler = (
+      next: number | { count?: number; participantCount?: number },
+    ) => {
       if (typeof next === "number") {
         setCount(next);
         return;
@@ -100,6 +103,68 @@ export type LeaderboardEntry = {
   updatedAt?: string;
 };
 
+const LEADERBOARD_CACHE_PREFIX = "examstrike_leaderboard_cache_v1:";
+
+function getStoredUserId() {
+  try {
+    return JSON.parse(localStorage.getItem("user_data") || "{}").id || "";
+  } catch {
+    return "";
+  }
+}
+
+function mapLeaderboardRows(
+  payload: any,
+  prevRows: LeaderboardEntry[],
+  storedUserId: string,
+) {
+  const entries =
+    payload?.topEntries || (Array.isArray(payload) ? payload : []);
+  const prevMap = new Map(prevRows.map((row) => [row.id, row.rank]));
+
+  return entries.map((entry: any) => {
+    const id = entry.userId || entry.id || "";
+    const prevRank = prevMap.get(id) ?? entry.rank ?? 0;
+    return {
+      id,
+      rank: entry.rank ?? 0,
+      prevRank,
+      username: entry.name || entry.username || "Unknown",
+      score: entry.score ?? 0,
+      accuracy: entry.accuracy ?? 0,
+      timeSec: entry.timeTakenSeconds ?? entry.timeSec ?? 0,
+      isYou: id === storedUserId,
+      examTypeId: entry.examTypeId,
+      roomCode: entry.roomCode,
+      updatedAt: entry.updatedAt,
+    } satisfies LeaderboardEntry;
+  });
+}
+
+function getLeaderboardCacheKey(examId: string) {
+  return `${LEADERBOARD_CACHE_PREFIX}${examId}`;
+}
+
+function readCachedLeaderboard(examId: string) {
+  try {
+    const raw = sessionStorage.getItem(getLeaderboardCacheKey(examId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedLeaderboard(examId: string, payload: any) {
+  try {
+    sessionStorage.setItem(
+      getLeaderboardCacheKey(examId),
+      JSON.stringify(payload),
+    );
+  } catch {
+    // Ignore storage quota/transient errors and keep live UI flowing.
+  }
+}
+
 export function useExamLeaderboard(examId = "") {
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
   const prevRowsRef = useRef<LeaderboardEntry[]>([]);
@@ -111,48 +176,59 @@ export function useExamLeaderboard(examId = "") {
       return;
     }
 
+    let cancelled = false;
     const socket = ensureSocketConnection();
-    const storedUserId = (() => {
-      try { return JSON.parse(localStorage.getItem("user_data") || "{}").id || ""; }
-      catch { return ""; }
-    })();
+    const storedUserId = getStoredUserId();
+    const receivedLiveUpdateRef = { current: false };
 
-    const handler = (next: any) => {
-      // Backend sends { topEntries, examId, participantCount, updatedAt }
-      const entries = next?.topEntries || (Array.isArray(next) ? next : []);
-      const prevMap = new Map(prevRowsRef.current.map((r) => [r.id, r.rank]));
+    const applyRows = (payload: any, source: "cache" | "http" | "socket") => {
+      if (cancelled) {
+        return;
+      }
 
-      const mapped: LeaderboardEntry[] = entries.map((e: any) => {
-        const id = e.userId || e.id || "";
-        const prevRank = prevMap.get(id) ?? e.rank ?? 0;
-        return {
-          id,
-          rank: e.rank ?? 0,
-          prevRank,
-          username: e.name || e.username || "Unknown",
-          score: e.score ?? 0,
-          accuracy: e.accuracy ?? 0,
-          timeSec: e.timeTakenSeconds ?? e.timeSec ?? 0,
-          isYou: id === storedUserId,
-          examTypeId: e.examTypeId,
-          roomCode: e.roomCode,
-          updatedAt: e.updatedAt,
-        };
-      });
-
+      const mapped = mapLeaderboardRows(
+        payload,
+        prevRowsRef.current,
+        storedUserId,
+      );
       prevRowsRef.current = mapped;
       setRows(mapped);
+
+      if (source !== "cache") {
+        writeCachedLeaderboard(examId, payload);
+      }
+    };
+
+    const cached = readCachedLeaderboard(examId);
+    if (cached) {
+      applyRows(cached, "cache");
+    }
+
+    const handler = (next: any) => {
+      receivedLiveUpdateRef.current = true;
+      applyRows(next, "socket");
     };
 
     const subscribe = () => {
-      joinExamChannel(examId);
       subscribeLeaderboard(examId);
     };
+
     socket.on(SOCKET_EVENTS.LEADERBOARD_UPDATE, handler);
     socket.on("connect", subscribe);
     subscribe();
 
+    void fetchExamLeaderboard(examId)
+      .then((snapshot) => {
+        if (!receivedLiveUpdateRef.current) {
+          applyRows(snapshot, "http");
+        }
+      })
+      .catch(() => {
+        // REST hydrate is a fast-path fallback; socket updates continue regardless.
+      });
+
     return () => {
+      cancelled = true;
       socket.off(SOCKET_EVENTS.LEADERBOARD_UPDATE, handler);
       socket.off("connect", subscribe);
     };
@@ -168,4 +244,32 @@ export function useLeaderboard(examId?: string) {
       ? localStorage.getItem("active_exam_id") || ""
       : "");
   return useExamLeaderboard(activeExamId);
+}
+
+import { fetchLiveExams } from "@/services/api";
+
+export function useLiveExamCount() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const data = await fetchLiveExams();
+        if (!active) return;
+        const liveCount = data.exams.filter((e: any) => e.status === "live").length;
+        setCount(liveCount);
+      } catch {
+        // Fallback to 0
+      }
+    };
+    load();
+    const interval = setInterval(load, 30000); // Check every 30s
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  return count;
 }

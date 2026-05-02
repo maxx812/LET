@@ -1,0 +1,5 @@
+mongodb+srv://manmathgonewarx_db_user:sW4qxkmWWaqdh5hr@cluster0.3g14v8u.mongodb.net/
+REDIS_URL=redis://localhost:6379
+
+
+MONGODB_URI=mongodb+srv://manmathgonewarx_db_user:sW4qxkmWWaqdh5hr@cluster0.3g14v8u.mongodb.net/

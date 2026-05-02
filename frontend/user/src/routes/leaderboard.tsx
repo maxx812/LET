@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, memo } from "react";
-import { Trophy, TrendingUp, TrendingDown, Minus, Crown, Search, Filter } from "lucide-react";
+import {
+  Trophy,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Crown,
+  Search,
+  Filter,
+} from "lucide-react";
 import { useLeaderboard } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
 import { fetchMyProfile, fetchExamTypes } from "@/services/api";
@@ -9,9 +17,17 @@ export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
       { title: "Live Leaderboard — ExamStrike" },
-      { name: "description", content: "Real-time rankings of India's top exam aspirants. Live performance updates." },
+      {
+        name: "description",
+        content:
+          "Real-time rankings of India's top exam aspirants. Live performance updates.",
+      },
       { property: "og:title", content: "Live Leaderboard — ExamStrike" },
-      { property: "og:description", content: "Watch the rankings shuffle in real-time based on session performance." },
+      {
+        property: "og:description",
+        content:
+          "Watch the rankings shuffle in real-time based on session performance.",
+      },
     ],
   }),
   component: LeaderboardPage,
@@ -26,46 +42,62 @@ function LeaderboardPage() {
 
   useEffect(() => {
     fetchMyProfile().then(setUserProfile).catch(console.error);
-    fetchExamTypes().then(data => setExamTypes(data.examTypes || [])).catch(console.error);
+    fetchExamTypes()
+      .then((data) => setExamTypes(data.examTypes || []))
+      .catch(console.error);
   }, []);
 
-  const targetType = examTypes.find(t => t._id === userProfile?.targetExamTypeId);
+  const targetType = examTypes.find(
+    (t) => t._id === userProfile?.targetExamTypeId,
+  );
 
   // Filter by user's exam field (targetExamTypeId)
   const fieldRows = userProfile?.targetExamTypeId
-    ? rows.filter(r => r.examTypeId === userProfile.targetExamTypeId)
+    ? rows.filter((r) => r.examTypeId === userProfile.targetExamTypeId)
     : rows;
 
-  const filtered = fieldRows.filter((r) => r.username.toLowerCase().includes(query.toLowerCase()));
+  const filtered = fieldRows.filter((r) =>
+    r.username.toLowerCase().includes(query.toLowerCase()),
+  );
   const top3 = fieldRows.slice(0, 3);
   const you = fieldRows.find((r) => r.isYou);
 
   return (
     <div className="mx-auto max-w-6xl px-4 md:px-6 py-8 md:py-12">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> LIVE · updates every 2.5s
+      <div className="surface-panel-strong p-5 md:p-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="surface-kicker">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />{" "}
+              LIVE · updates every 2.5s
+            </div>
+            <h1 className="mt-3 text-display text-3xl md:text-4xl font-extrabold">
+              Leaderboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {targetType
+                ? `${targetType.name} Aspirants`
+                : "Real-time rankings"}{" "}
+              · Today's Session
+            </p>
           </div>
-          <h1 className="mt-3 text-display text-3xl md:text-4xl font-extrabold">Leaderboard</h1>
-          <p className="text-muted-foreground mt-1">
-            {targetType ? `${targetType.name} Aspirants` : "Real-time rankings"} · Today's Session
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1">
-          {(["room", "global"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={cn(
-                "rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-colors",
-                tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t === "room" ? "Room" : "Global"}
-            </button>
-          ))}
+          <div className="surface-panel-muted flex items-center gap-2 p-1">
+            {(["room", "global"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={cn(
+                  "rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-colors",
+                  tab === t
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t === "room" ? "Room" : "Global"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -83,14 +115,20 @@ function LeaderboardPage() {
           return (
             <div key={r.id} className="flex flex-col items-center justify-end">
               <div className="relative">
-                {idx === 0 && <Crown className="absolute -top-7 left-1/2 -translate-x-1/2 h-6 w-6 text-accent fill-accent" />}
+                {idx === 0 && (
+                  <Crown className="absolute -top-7 left-1/2 -translate-x-1/2 h-6 w-6 text-accent fill-accent" />
+                )}
                 <div className="h-14 w-14 md:h-16 md:w-16 rounded-2xl bg-gradient-primary text-primary-foreground flex items-center justify-center text-display text-lg font-extrabold border-4 border-card shadow-pop">
                   {r.username.slice(0, 2).toUpperCase()}
                 </div>
               </div>
               <div className="mt-2 text-center">
-                <div className="font-bold text-sm truncate max-w-[120px]">{r.username}</div>
-                <div className="text-mono tabular text-xs text-muted-foreground">{r.score} XP</div>
+                <div className="font-bold text-sm truncate max-w-[120px]">
+                  {r.username}
+                </div>
+                <div className="text-mono tabular text-xs text-muted-foreground">
+                  {r.score} XP
+                </div>
               </div>
               <div
                 className={cn(
@@ -116,22 +154,32 @@ function LeaderboardPage() {
                 {you.username.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest opacity-70">Your Merit Position</div>
-                <div className="text-display text-2xl font-extrabold">#{you.rank} · {you.username}</div>
+                <div className="text-xs uppercase tracking-widest opacity-70">
+                  Your Merit Position
+                </div>
+                <div className="text-display text-2xl font-extrabold">
+                  #{you.rank} · {you.username}
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-right">
               <div>
                 <div className="text-xs opacity-70">Score</div>
-                <div className="text-display text-2xl font-bold tabular">{you.score}</div>
+                <div className="text-display text-2xl font-bold tabular">
+                  {you.score}
+                </div>
               </div>
               <div>
                 <div className="text-xs opacity-70">Accuracy</div>
-                <div className="text-display text-2xl font-bold tabular">{you.accuracy.toFixed(0)}%</div>
+                <div className="text-display text-2xl font-bold tabular">
+                  {you.accuracy.toFixed(0)}%
+                </div>
               </div>
               <div>
                 <div className="text-xs opacity-70">To #1</div>
-                <div className="text-display text-2xl font-bold tabular text-accent">{Math.max(0, (fieldRows[0]?.score || 0) - you.score)}</div>
+                <div className="text-display text-2xl font-bold tabular text-accent">
+                  {Math.max(0, (fieldRows[0]?.score || 0) - you.score)}
+                </div>
               </div>
             </div>
           </div>
@@ -139,7 +187,7 @@ function LeaderboardPage() {
       )}
 
       {/* Filters */}
-      <div className="mt-8 flex items-center gap-2 flex-wrap">
+      <div className="surface-panel mt-8 flex items-center gap-2 flex-wrap p-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -155,7 +203,7 @@ function LeaderboardPage() {
       </div>
 
       {/* Table */}
-      <div className="mt-4 rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="surface-panel mt-4 overflow-hidden">
         <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 border-b border-border text-[11px] uppercase tracking-widest text-muted-foreground font-semibold bg-secondary/40">
           <div className="col-span-1">Pos</div>
           <div className="col-span-3">Candidate</div>
@@ -165,14 +213,19 @@ function LeaderboardPage() {
           <div className="col-span-2 text-right">Updated At</div>
         </div>
         <ul>
-          {filtered.map((r) => (
-            <LeaderboardRow key={r.id} r={r} />
-          ))}
+          {filtered.length > 0 ? (
+            filtered.map((r) => <LeaderboardRow key={r.id} r={r} />)
+          ) : (
+            <li className="px-5 py-10 text-center text-sm text-muted-foreground">
+              Waiting for leaderboard entries for the current exam.
+            </li>
+          )}
         </ul>
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Trophy className="h-3.5 w-3.5" /> Final rankings lock when the timer hits zero.
+        <Trophy className="h-3.5 w-3.5" /> Final rankings lock when the timer
+        hits zero.
       </div>
     </div>
   );
@@ -208,18 +261,34 @@ const LeaderboardRow = memo(({ r }: { r: any }) => {
         <div className="min-w-0">
           <div className="font-semibold truncate flex items-center gap-2">
             {r.username}
-            {r.isYou && <span className="text-[10px] font-bold uppercase rounded bg-accent text-accent-foreground px-1.5 py-0.5">You</span>}
+            {r.isYou && (
+              <span className="text-[10px] font-bold uppercase rounded bg-accent text-accent-foreground px-1.5 py-0.5">
+                You
+              </span>
+            )}
           </div>
-          <div className="text-xs text-muted-foreground md:hidden">{r.score} XP · {r.roomCode}</div>
+          <div className="text-xs text-muted-foreground md:hidden">
+            {r.score} XP · {r.roomCode}
+          </div>
         </div>
       </div>
-      <div className="hidden md:block md:col-span-2 text-right font-mono text-xs text-accent bg-accent/5 py-1 px-2 rounded-lg">{r.roomCode || "GLOBAL"}</div>
-      <div className="hidden md:block md:col-span-2 text-right text-display text-lg font-bold tabular">{r.score}</div>
+      <div className="hidden md:block md:col-span-2 text-right font-mono text-xs text-accent bg-accent/5 py-1 px-2 rounded-lg">
+        {r.roomCode || "GLOBAL"}
+      </div>
+      <div className="hidden md:block md:col-span-2 text-right text-display text-lg font-bold tabular">
+        {r.score}
+      </div>
       <div className="hidden md:block md:col-span-2 text-right text-mono text-sm text-muted-foreground tabular">
         {Math.floor(r.timeSec / 60)}m {r.timeSec % 60}s
       </div>
       <div className="hidden md:block md:col-span-2 text-right text-xs text-muted-foreground tabular">
-        {r.updatedAt ? new Date(r.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-"}
+        {r.updatedAt
+          ? new Date(r.updatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })
+          : "-"}
       </div>
       <div className="md:col-span-1 flex md:justify-end">
         {delta > 0 ? (
